@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity Token Tracker — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              900: '#1e1b4b'
+            },
+            darkbg: '#0B0F19',
+            darkcard: '#111827',
+            darkborder: '#1F2937'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 3px;
+    }
+    .bar-hover:hover {
+      opacity: 0.85;
+      transform: scaleY(1.02);
+      transform-origin: bottom;
+    }
+  </style>
+</head>
+<body class="bg-darkbg text-gray-100 min-h-screen custom-scrollbar antialiased">
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-darkborder bg-darkcard/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+        <span class="text-xl">⚡</span>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          Antigravity Token Tracker
+          <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">v1.0</span>
+        </h1>
+        <p class="text-xs text-gray-400">Consommation en temps réel · Par Heure, Jour & Projet</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-3">
+      <button id="refresh-btn" onclick="location.reload()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-gray-200 border border-gray-700 transition">
+        <span>🔄</span>
+        <span>Rafraîchir</span>
+      </button>
+      <div class="text-xs px-3 py-1.5 rounded-lg bg-gray-800/60 border border-gray-700/60 text-gray-300">
+        Dernière synchro: <span id="sync-time" class="text-brand-400 font-mono font-semibold"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    
+    <!-- KPI Header Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- Total Tokens Card -->
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Consommé</p>
+            <h3 id="kpi-total-tokens" class="text-3xl font-extrabold text-white mt-1 font-mono">--</h3>
+          </div>
+          <span class="p-2.5 rounded-xl bg-brand-500/10 text-brand-400 text-lg border border-brand-500/20">📈</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs text-gray-400 border-t border-gray-800/60 pt-3">
+          <span>Appels Modèle : <strong id="kpi-total-calls" class="text-gray-200 font-mono">--</strong></span>
+          <span class="text-brand-400">Toutes sessions</span>
+        </div>
+      </div>
+
+      <!-- Today's Tokens Card -->
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Aujourd'hui</p>
+            <h3 id="kpi-today-tokens" class="text-3xl font-extrabold text-white mt-1 font-mono">--</h3>
+          </div>
+          <span class="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 text-lg border border-cyan-500/20">📅</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs text-gray-400 border-t border-gray-800/60 pt-3">
+          <span>Appels du jour : <strong id="kpi-today-calls" class="text-gray-200 font-mono">--</strong></span>
+          <span class="text-cyan-400 font-mono font-medium" id="kpi-today-date">--</span>
+        </div>
+      </div>
+
+      <!-- Cached / Optimized Tokens -->
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Tokens en Cache (Économie)</p>
+            <h3 id="kpi-cached-tokens" class="text-3xl font-extrabold text-emerald-400 mt-1 font-mono">--</h3>
+          </div>
+          <span class="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 text-lg border border-emerald-500/20">⚡</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs text-gray-400 border-t border-gray-800/60 pt-3">
+          <span>Taux de Cache : <strong id="kpi-cache-rate" class="text-emerald-400 font-mono">--%</strong></span>
+          <span class="text-xs text-emerald-400/80">Context Caching</span>
+        </div>
+      </div>
+
+      <!-- Estimated Cost -->
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-5 shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Coût Estimé (USD)</p>
+            <h3 id="kpi-cost" class="text-3xl font-extrabold text-amber-400 mt-1 font-mono">--</h3>
+          </div>
+          <span class="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 text-lg border border-amber-500/20">💰</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-xs text-gray-400 border-t border-gray-800/60 pt-3">
+          <span>Aujourd'hui : <strong id="kpi-today-cost" class="text-amber-300 font-mono">--</strong></span>
+          <span class="text-amber-400/80 text-xs">Gemini Flash Rates</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Filters & Hourly Breakdown Section -->
+    <section class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>⏱️</span>
+            <span>Consommation par Heure (00h - 23h)</span>
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">Visualisez les pics de charge heure par heure pour chaque journée</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <label for="day-select" class="text-xs text-gray-400 font-medium">Sélectionner un jour :</label>
+          <select id="day-select" onchange="renderHourlyChart(this.value)" class="bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-brand-500 outline-none">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Hourly Chart Canvas / SVG Container -->
+      <div class="pt-2">
+        <div id="hourly-chart-container" class="w-full h-56 flex items-end gap-1.5 px-2 pb-6 border-b border-gray-800 relative">
+          <!-- Bars injected via JS -->
+        </div>
+        <!-- Hour labels below bars -->
+        <div id="hourly-labels" class="flex justify-between text-[11px] text-gray-400 px-2 pt-2 font-mono">
+          <!-- 00h, 04h, 08h, 12h, 16h, 20h, 23h labels -->
+        </div>
+      </div>
+
+      <!-- Hourly Quick Insights -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs">
+        <div class="bg-gray-800/40 border border-gray-800 p-3 rounded-xl">
+          <span class="text-gray-400">Heure de pointe :</span>
+          <strong id="peak-hour" class="text-brand-400 ml-2 font-mono">--</strong>
+        </div>
+        <div class="bg-gray-800/40 border border-gray-800 p-3 rounded-xl">
+          <span class="text-gray-400">Total sur le jour sélectionné :</span>
+          <strong id="selected-day-total" class="text-gray-200 ml-2 font-mono">--</strong>
+        </div>
+        <div class="bg-gray-800/40 border border-gray-800 p-3 rounded-xl">
+          <span class="text-gray-400">Moyenne par heure active :</span>
+          <strong id="avg-active-hour" class="text-gray-200 ml-2 font-mono">--</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- Daily History Chart Section -->
+    <section class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>📅</span>
+            <span>Historique par Jour</span>
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">Évolution quotidienne de la consommation de tokens</p>
+        </div>
+      </div>
+
+      <div id="daily-chart-container" class="w-full h-52 flex items-end gap-3 px-2 pb-6 border-b border-gray-800 relative">
+        <!-- Daily bars injected via JS -->
+      </div>
+    </section>
+
+    <!-- Projects Breakdown Table Section -->
+    <section class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>📁</span>
+            <span>Consommation par Projet / Workspace</span>
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">Détail des tokens consommés dans chaque répertoire de travail</p>
+        </div>
+        
+        <input type="text" id="project-search" oninput="filterProjectTable(this.value)" placeholder="Filtrer un projet..." class="bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-brand-500 outline-none w-64" />
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400 uppercase tracking-wider font-semibold">
+              <th class="py-3 px-4">Projet / Workspace</th>
+              <th class="py-3 px-4">Part (%)</th>
+              <th class="py-3 px-4 text-right">Appels</th>
+              <th class="py-3 px-4 text-right">Input (Prompt)</th>
+              <th class="py-3 px-4 text-right">Output (Génération)</th>
+              <th class="py-3 px-4 text-right">Cache</th>
+              <th class="py-3 px-4 text-right font-bold text-gray-300">Total Tokens</th>
+              <th class="py-3 px-4 text-right">Coût Est.</th>
+            </tr>
+          </thead>
+          <tbody id="projects-tbody" class="divide-y divide-gray-800/60 font-mono">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="text-center py-6 border-t border-darkborder text-xs text-gray-400">
+    Antigravity Token Tracker · Créé pour Racem-H · Mis à jour en continu
+  </footer>
+
+  <script>
+    const RAW_DATA = {"timestamp": "2026-11-09T23:26:55.746933", "today_date": "2026-11-09", "current_hour": "23", "summary": {"total_input": 11315472, "total_output": 1595276, "total_cached": 178557719, "total_tokens": 191468467, "total_calls": 2179, "estimated_cost_usd": 4.6752, "cache_hit_pct": 94.0}, "today": {"input": 4756011, "output": 719818, "cached": 69465898, "calls": 936, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 196988, "output": 9826, "cached": 1023478, "calls": 43}, "09": {"input": 51020, "output": 2868, "cached": 0, "calls": 1}, "10": {"input": 62331, "output": 6200, "cached": 166406, "calls": 4}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 387299, "output": 72320, "cached": 2031919, "calls": 50}, "14": {"input": 84140, "output": 5771, "cached": 311219, "calls": 19}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 316318, "output": 42453, "cached": 3534684, "calls": 89}, "17": {"input": 1573932, "output": 233698, "cached": 28291963, "calls": 342}, "18": {"input": 1096349, "output": 172692, "cached": 17888999, "calls": 182}, "19": {"input": 77586, "output": 88, "cached": 0, "calls": 1}, "20": {"input": 47996, "output": 12937, "cached": 1375253, "calls": 17}, "21": {"input": 417966, "output": 88280, "cached": 7879614, "calls": 73}, "22": {"input": 444086, "output": 72685, "cached": 6962363, "calls": 115}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 74941727, "cost_usd": 1.8751, "cache_hit_pct": 93.6}, "current_hour_stats": {"hour": "23", "total": 0, "calls": 0, "input": 0, "output": 0, "cached": 0}, "matched_project": {"workspace_name": "validation Software", "workspace_path": "c:\\Users\\medra\\Desktop\\validation Software", "input": 1865329, "output": 266322, "cached": 31955590, "calls": 289, "last_activity": "2026-11-09T22:06:52Z", "total": 34087241, "cost_usd": 0.819, "percent_of_total": 17.8, "cache_hit_pct": 94.5}, "days": {"2026-11-09": {"input": 4756011, "output": 719818, "cached": 69465898, "calls": 936, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 196988, "output": 9826, "cached": 1023478, "calls": 43}, "09": {"input": 51020, "output": 2868, "cached": 0, "calls": 1}, "10": {"input": 62331, "output": 6200, "cached": 166406, "calls": 4}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 387299, "output": 72320, "cached": 2031919, "calls": 50}, "14": {"input": 84140, "output": 5771, "cached": 311219, "calls": 19}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 316318, "output": 42453, "cached": 3534684, "calls": 89}, "17": {"input": 1573932, "output": 233698, "cached": 28291963, "calls": 342}, "18": {"input": 1096349, "output": 172692, "cached": 17888999, "calls": 182}, "19": {"input": 77586, "output": 88, "cached": 0, "calls": 1}, "20": {"input": 47996, "output": 12937, "cached": 1375253, "calls": 17}, "21": {"input": 417966, "output": 88280, "cached": 7879614, "calls": 73}, "22": {"input": 444086, "output": 72685, "cached": 6962363, "calls": 115}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 74941727, "cost_usd": 1.8751, "cache_hit_pct": 93.6}, "2026-11-05": {"input": 702112, "output": 113220, "cached": 4018234, "calls": 77, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 195162, "output": 83990, "cached": 1537486, "calls": 33}, "14": {"input": 258494, "output": 10429, "cached": 371139, "calls": 5}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 213766, "output": 13337, "cached": 1222211, "calls": 27}, "17": {"input": 34690, "output": 5464, "cached": 887398, "calls": 12}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 4833566, "cost_usd": 0.162, "cache_hit_pct": 85.1}, "2026-11-03": {"input": 2607449, "output": 264606, "cached": 51588045, "calls": 521, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 360262, "output": 36145, "cached": 4953833, "calls": 95}, "16": {"input": 692380, "output": 82564, "cached": 23470181, "calls": 129}, "17": {"input": 715379, "output": 55021, "cached": 7480154, "calls": 128}, "18": {"input": 618943, "output": 50498, "cached": 13638048, "calls": 119}, "19": {"input": 220485, "output": 40378, "cached": 2045829, "calls": 50}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 54460100, "cost_usd": 1.2422, "cache_hit_pct": 95.2}, "2026-10-20": {"input": 1448874, "output": 276838, "cached": 32002260, "calls": 349, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 598864, "output": 103999, "cached": 12929789, "calls": 163}, "11": {"input": 227154, "output": 56264, "cached": 2358828, "calls": 49}, "12": {"input": 322435, "output": 79225, "cached": 10566605, "calls": 63}, "13": {"input": 300421, "output": 37350, "cached": 6147038, "calls": 74}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 33727972, "cost_usd": 0.7918, "cache_hit_pct": 95.7}, "2026-11-04": {"input": 1054062, "output": 170709, "cached": 17302060, "calls": 176, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 153406, "output": 14432, "cached": 2594160, "calls": 31}, "18": {"input": 900656, "output": 156277, "cached": 14707900, "calls": 145}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 18526831, "cost_usd": 0.4547, "cache_hit_pct": 94.3}, "2026-10-13": {"input": 147148, "output": 17376, "cached": 728675, "calls": 32, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 147148, "output": 17376, "cached": 728675, "calls": 32}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 893199, "cost_usd": 0.0299, "cache_hit_pct": 83.2}, "2026-10-27": {"input": 599816, "output": 32709, "cached": 3452547, "calls": 88, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 102434, "output": 3665, "cached": 0, "calls": 9}, "09": {"input": 85007, "output": 3084, "cached": 31253, "calls": 7}, "10": {"input": 325726, "output": 25261, "cached": 3053335, "calls": 66}, "11": {"input": 86649, "output": 699, "cached": 367959, "calls": 6}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 4085072, "cost_usd": 0.1195, "cache_hit_pct": 85.2}}, "hours": {"2026-11-09 17h": {"input": 1573932, "output": 233698, "cached": 28291963, "calls": 342}, "2026-11-09 18h": {"input": 1096349, "output": 172692, "cached": 17888999, "calls": 182}, "2026-11-09 13h": {"input": 387299, "output": 72320, "cached": 2031919, "calls": 50}, "2026-11-09 08h": {"input": 196988, "output": 9826, "cached": 1023478, "calls": 43}, "2026-11-09 09h": {"input": 51020, "output": 2868, "cached": 0, "calls": 1}, "2026-11-09 10h": {"input": 62331, "output": 6200, "cached": 166406, "calls": 4}, "2026-11-09 22h": {"input": 444086, "output": 72685, "cached": 6962363, "calls": 115}, "2026-11-09 21h": {"input": 417966, "output": 88280, "cached": 7879614, "calls": 73}, "2026-11-09 16h": {"input": 316318, "output": 42453, "cached": 3534684, "calls": 89}, "2026-11-09 14h": {"input": 84140, "output": 5771, "cached": 311219, "calls": 19}, "2026-11-05 13h": {"input": 195162, "output": 83990, "cached": 1537486, "calls": 33}, "2026-11-05 14h": {"input": 258494, "output": 10429, "cached": 371139, "calls": 5}, "2026-11-03 15h": {"input": 360262, "output": 36145, "cached": 4953833, "calls": 95}, "2026-11-03 16h": {"input": 692380, "output": 82564, "cached": 23470181, "calls": 129}, "2026-11-03 17h": {"input": 715379, "output": 55021, "cached": 7480154, "calls": 128}, "2026-10-20 10h": {"input": 598864, "output": 103999, "cached": 12929789, "calls": 163}, "2026-10-20 11h": {"input": 227154, "output": 56264, "cached": 2358828, "calls": 49}, "2026-11-04 18h": {"input": 900656, "output": 156277, "cached": 14707900, "calls": 145}, "2026-10-13 10h": {"input": 147148, "output": 17376, "cached": 728675, "calls": 32}, "2026-11-03 18h": {"input": 618943, "output": 50498, "cached": 13638048, "calls": 119}, "2026-11-03 19h": {"input": 220485, "output": 40378, "cached": 2045829, "calls": 50}, "2026-11-05 16h": {"input": 213766, "output": 13337, "cached": 1222211, "calls": 27}, "2026-11-05 17h": {"input": 34690, "output": 5464, "cached": 887398, "calls": 12}, "2026-11-09 19h": {"input": 77586, "output": 88, "cached": 0, "calls": 1}, "2026-11-09 20h": {"input": 47996, "output": 12937, "cached": 1375253, "calls": 17}, "2026-10-20 12h": {"input": 322435, "output": 79225, "cached": 10566605, "calls": 63}, "2026-10-20 13h": {"input": 300421, "output": 37350, "cached": 6147038, "calls": 74}, "2026-10-27 08h": {"input": 102434, "output": 3665, "cached": 0, "calls": 9}, "2026-10-27 09h": {"input": 85007, "output": 3084, "cached": 31253, "calls": 7}, "2026-10-27 10h": {"input": 325726, "output": 25261, "cached": 3053335, "calls": 66}, "2026-10-27 11h": {"input": 86649, "output": 699, "cached": 367959, "calls": 6}, "2026-11-04 17h": {"input": 153406, "output": 14432, "cached": 2594160, "calls": 31}}, "projects": {"Global / Non défini": {"workspace_name": "Global / Non défini", "workspace_path": "", "input": 3306370, "output": 420212, "cached": 36604721, "calls": 609, "last_activity": "2026-11-09T22:26:46Z", "total": 40331303, "cost_usd": 1.0604, "percent_of_total": 21.1, "cache_hit_pct": 91.7}, "Projet python": {"workspace_name": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 2855608, "output": 405766, "cached": 44106021, "calls": 635, "last_activity": "2026-11-09T22:22:55Z", "total": 47367395, "cost_usd": 1.1629, "percent_of_total": 24.7, "cache_hit_pct": 93.9}, "validation Software": {"workspace_name": "validation Software", "workspace_path": "c:\\Users\\medra\\Desktop\\validation Software", "input": 1865329, "output": 266322, "cached": 31955590, "calls": 289, "last_activity": "2026-11-09T22:06:52Z", "total": 34087241, "cost_usd": 0.819, "percent_of_total": 17.8, "cache_hit_pct": 94.5}, "new data": {"workspace_name": "new data", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet Data werehouse- ML\\new data", "input": 531401, "output": 117202, "cached": 16244624, "calls": 172, "last_activity": "2026-11-09T17:44:00Z", "total": 16893227, "cost_usd": 0.3796, "percent_of_total": 8.8, "cache_hit_pct": 96.8}, "Database Management System": {"workspace_name": "Database Management System", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Database Management System", "input": 453656, "output": 94419, "cached": 1908625, "calls": 38, "last_activity": "2026-11-05T14:42:33Z", "total": 2456700, "cost_usd": 0.0981, "percent_of_total": 1.3, "cache_hit_pct": 80.8}, "Projet_Bibliotheque_Django": {"workspace_name": "Projet_Bibliotheque_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Projet_Bibliotheque_Django", "input": 1195295, "output": 129796, "cached": 32861050, "calls": 268, "last_activity": "2026-11-03T17:08:21Z", "total": 34186141, "cost_usd": 0.7447, "percent_of_total": 17.9, "cache_hit_pct": 96.5}, "DS": {"workspace_name": "DS", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Estimation Techniques for Engineers\\DS", "input": 900656, "output": 156277, "cached": 14707900, "calls": 145, "last_activity": "2026-11-04T18:43:55Z", "total": 15764833, "cost_usd": 0.3902, "percent_of_total": 8.2, "cache_hit_pct": 94.2}, "Ds_Django": {"workspace_name": "Ds_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Ds_Django", "input": 207157, "output": 5282, "cached": 169188, "calls": 23, "last_activity": "2026-11-03T17:08:48Z", "total": 381627, "cost_usd": 0.0203, "percent_of_total": 0.2, "cache_hit_pct": 45.0}}, "conversations": [{"id": "863031f5-a2c4-45d9-a890-ef0b69565c9b", "title": "Project Code Review Request", "workspace": "Projet_Bibliotheque_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Projet_Bibliotheque_Django", "input": 1195295, "output": 129796, "cached": 32861050, "total": 34186141, "calls": 268, "last_activity": "2026-11-03T17:08:21Z"}, {"id": "50404e05-8a11-4d27-97e9-ea60c50270db", "title": "ESPRIT Software Project Setup", "workspace": "validation Software", "workspace_path": "c:\\Users\\medra\\Desktop\\validation Software", "input": 1865329, "output": 266322, "cached": 31955590, "total": 34087241, "calls": 289, "last_activity": "2026-11-09T22:06:52Z"}, {"id": "f673137c-2c40-4d75-b0eb-1ec6298d54ef", "title": "Light Mode Display Issue", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 847799, "output": 171728, "cached": 18897255, "total": 19916782, "calls": 185, "last_activity": "2026-10-20T13:11:35Z"}, {"id": "d3898842-d2d4-4fa0-b50c-30012e2ca5ee", "title": "Problème Affichage Icône Wi-Fi", "workspace": "Global / Non défini", "workspace_path": "", "input": 912205, "output": 82779, "cached": 16465611, "total": 17460595, "calls": 172, "last_activity": "2026-11-03T18:48:23Z"}, {"id": "56e5600f-c811-4da7-ba9d-73b4b9aca8f8", "title": "New Data Folder Structure Setup", "workspace": "new data", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet Data werehouse- ML\\new data", "input": 531401, "output": 117202, "cached": 16244624, "total": 16893227, "calls": 172, "last_activity": "2026-11-09T17:44:00Z"}, {"id": "9860a6c1-d90d-46b3-90df-371f92c768cb", "title": "Correction And Integration PDF", "workspace": "DS", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Estimation Techniques for Engineers\\DS", "input": 900656, "output": 156277, "cached": 14707900, "total": 15764833, "calls": 145, "last_activity": "2026-11-04T18:43:55Z"}, {"id": "8d93ccf6-d640-4742-b5f8-51715515f092", "title": "Django Admin Customization Workshop", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 544069, "output": 101049, "cached": 12791687, "total": 13436805, "calls": 149, "last_activity": "2026-10-20T11:00:04Z"}, {"id": "ebd8f914-c0e1-4715-a197-82ba21452e45", "title": "Power BI File Assistance", "workspace": "Global / Non défini", "workspace_path": "", "input": 565915, "output": 72614, "cached": 8578903, "total": 9217432, "calls": 121, "last_activity": "2026-11-09T22:26:05Z"}, {"id": "fee0ab11-998e-4829-83e3-8e1863cce03f", "title": "Terminal Error C Qoi Meaning", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 753222, "output": 47141, "cached": 6046707, "total": 6847070, "calls": 119, "last_activity": "2026-11-04T17:34:03Z"}, {"id": "795b6e8d-fe8a-45f3-8be6-fa9696fddfa3", "title": "Checking the Last Commit", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 294620, "output": 39069, "cached": 3521594, "total": 3855283, "calls": 86, "last_activity": "2026-11-09T17:00:18Z"}, {"id": "105e7bc7-3804-4722-9dd1-472584a51de5", "title": "PL/SQL Summary and Database Management", "workspace": "Global / Non défini", "workspace_path": "", "input": 366947, "output": 71973, "cached": 2031919, "total": 2470839, "calls": 48, "last_activity": "2026-11-09T13:59:35Z"}, {"id": "7d2a36be-8d9e-4143-9c01-dcb53c67ea77", "title": "Preparation Pour Le DS", "workspace": "Database Management System", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Database Management System", "input": 453656, "output": 94419, "cached": 1908625, "total": 2456700, "calls": 38, "last_activity": "2026-11-05T14:42:33Z"}, {"id": "ca368291-3d5e-40b0-ba5a-a7a1775f5199", "title": "Problème Activation ActiverFaux Hors Ligne", "workspace": "Global / Non défini", "workspace_path": "", "input": 292792, "output": 46749, "cached": 2092196, "total": 2431737, "calls": 58, "last_activity": "2026-11-03T19:16:47Z"}, {"id": "cd9ea790-6461-4e80-b67c-757b69e4e868", "title": "Best Design for Professional Software Project App", "workspace": "Global / Non défini", "workspace_path": "", "input": 248456, "output": 18801, "cached": 2109609, "total": 2376866, "calls": 39, "last_activity": "2026-11-05T17:01:15Z"}, {"id": "3e160948-ca87-4943-85fd-0cd4841f7993", "title": "Django CRUD Operations For ExpeditionApp", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 211744, "output": 25342, "cached": 1806785, "total": 2043871, "calls": 49, "last_activity": "2026-11-09T22:22:55Z"}, {"id": "93110ca4-5e63-4ea9-89b8-75fab79da0fe", "title": "Creating Antigravity Token Tracking Skill", "workspace": "Global / Non défini", "workspace_path": "", "input": 175800, "output": 36783, "cached": 1750083, "total": 1962666, "calls": 44, "last_activity": "2026-11-09T22:26:46Z"}, {"id": "6c29bd3f-0768-4717-8c29-87b3711bd4df", "title": "Update Training Plan Document", "workspace": "Global / Non défini", "workspace_path": "", "input": 227898, "output": 51160, "cached": 1274768, "total": 1553826, "calls": 35, "last_activity": "2026-11-09T18:18:58Z"}, {"id": "1da68be5-af57-4adc-91c1-6deaf27178e8", "title": "Example of Filling Out Form", "workspace": "Global / Non défini", "workspace_path": "", "input": 310339, "output": 18894, "cached": 1189884, "total": 1519117, "calls": 48, "last_activity": "2026-11-09T10:20:59Z"}, {"id": "011a4d95-f803-4227-b082-7bbcb8cab085", "title": "Using Chat History For Tasks", "workspace": "Global / Non défini", "workspace_path": "", "input": 206018, "output": 20459, "cached": 1111748, "total": 1338225, "calls": 44, "last_activity": "2026-11-09T18:11:12Z"}, {"id": "ab420412-c24c-4966-9da1-44b169f1f5e9", "title": "Django ModelAdmin Fields Configuration", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 147148, "output": 17376, "cached": 728675, "total": 893199, "calls": 32, "last_activity": "2026-10-13T10:54:27Z"}, {"id": "a3cb9ac0-21b4-4f3a-a1e7-0a39033aeda6", "title": "Clear Project For Exam", "workspace": "Ds_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Ds_Django", "input": 207157, "output": 5282, "cached": 169188, "total": 381627, "calls": 23, "last_activity": "2026-11-03T17:08:48Z"}, {"id": "d0c3dbbc-786c-432e-8267-5230da45d8bd", "title": "Django FieldError Unknown Field", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 57006, "output": 4061, "cached": 313318, "total": 374385, "calls": 15, "last_activity": "2026-10-20T10:15:02Z"}]};
+
+    function formatNumber(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return n.toLocaleString();
+    }
+
+    function initDashboard() {
+      // Update Sync Time
+      document.getElementById('sync-time').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      // Populate KPIs
+      const sum = RAW_DATA.summary;
+      const today = RAW_DATA.today;
+
+      document.getElementById('kpi-total-tokens').textContent = formatNumber(sum.total_tokens);
+      document.getElementById('kpi-total-calls').textContent = sum.total_calls.toLocaleString();
+
+      document.getElementById('kpi-today-tokens').textContent = formatNumber(today.total);
+      document.getElementById('kpi-today-calls').textContent = today.calls.toLocaleString();
+      document.getElementById('kpi-today-date').textContent = RAW_DATA.today_date;
+
+      document.getElementById('kpi-cached-tokens').textContent = formatNumber(sum.total_cached);
+      document.getElementById('kpi-cache-rate').textContent = sum.cache_hit_pct + '%';
+
+      document.getElementById('kpi-cost').textContent = '$' + sum.estimated_cost_usd.toFixed(2);
+      document.getElementById('kpi-today-cost').textContent = '$' + today.cost_usd.toFixed(2);
+
+      // Populate Day Selector
+      const daySelect = document.getElementById('day-select');
+      const sortedDays = Object.keys(RAW_DATA.days).sort().reverse();
+      
+      daySelect.innerHTML = '';
+      sortedDays.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d + (d === RAW_DATA.today_date ? ' (Aujourd\'hui)' : '');
+        daySelect.appendChild(opt);
+      });
+
+      if (sortedDays.length > 0) {
+        renderHourlyChart(sortedDays[0]);
+      }
+
+      renderDailyChart();
+      renderProjectsTable();
+    }
+
+    function renderHourlyChart(dayKey) {
+      const container = document.getElementById('hourly-chart-container');
+      const labels = document.getElementById('hourly-labels');
+      container.innerHTML = '';
+      labels.innerHTML = '';
+
+      const dayData = RAW_DATA.days[dayKey];
+      if (!dayData) return;
+
+      let maxVal = 1;
+      let peakHour = '00';
+      let peakVal = 0;
+      let activeHoursCount = 0;
+      let activeHoursTotal = 0;
+
+      for (let h = 0; h < 24; h++) {
+        const hStr = h.toString().padStart(2, '0');
+        const hInfo = dayData.hours[hStr] || { input: 0, output: 0, cached: 0, calls: 0 };
+        const tot = hInfo.input + hInfo.output + hInfo.cached;
+        if (tot > maxVal) maxVal = tot;
+        if (tot > peakVal) {
+          peakVal = tot;
+          peakHour = hStr;
+        }
+        if (tot > 0) {
+          activeHoursCount++;
+          activeHoursTotal += tot;
+        }
+      }
+
+      document.getElementById('peak-hour').textContent = peakHour + 'h (' + formatNumber(peakVal) + ')';
+      document.getElementById('selected-day-total').textContent = formatNumber(dayData.total) + ' (' + dayData.calls + ' appels)';
+      document.getElementById('avg-active-hour').textContent = activeHoursCount > 0 ? formatNumber(Math.round(activeHoursTotal / activeHoursCount)) : '0';
+
+      for (let h = 0; h < 24; h++) {
+        const hStr = h.toString().padStart(2, '0');
+        const hInfo = dayData.hours[hStr] || { input: 0, output: 0, cached: 0, calls: 0 };
+        const tot = hInfo.input + hInfo.output + hInfo.cached;
+        const heightPct = Math.max((tot / maxVal) * 100, 3);
+
+        const col = document.createElement('div');
+        col.className = 'flex-1 flex flex-col justify-end items-center h-full group relative';
+
+        const bar = document.createElement('div');
+        bar.className = 'w-full rounded-t transition-all duration-300 bar-hover ' + 
+          (tot > 0 ? 'bg-gradient-to-t from-brand-600 to-cyan-400' : 'bg-gray-800/40');
+        bar.style.height = (tot > 0 ? heightPct : 3) + '%';
+
+        // Tooltip
+        const tip = document.createElement('div');
+        tip.className = 'absolute bottom-full mb-2 hidden group-hover:flex flex-col bg-gray-900 border border-gray-700 text-[10px] text-gray-200 p-2 rounded-lg shadow-xl z-20 pointer-events-none whitespace-nowrap font-mono';
+        tip.innerHTML = `<strong>Heure : ${hStr}h00 - ${hStr}h59</strong>` +
+          `<span>Total: ${formatNumber(tot)}</span>` +
+          `<span>Input: ${formatNumber(hInfo.input)} | Output: ${formatNumber(hInfo.output)}</span>` +
+          `<span>Cache: ${formatNumber(hInfo.cached)}</span>` +
+          `<span>Appels: ${hInfo.calls}</span>`;
+
+        col.appendChild(tip);
+        col.appendChild(bar);
+        container.appendChild(col);
+      }
+
+      // Set hour labels (every 3 hours)
+      for (let h = 0; h < 24; h += 3) {
+        const span = document.createElement('span');
+        span.textContent = h.toString().padStart(2, '0') + 'h';
+        labels.appendChild(span);
+      }
+      const lastSpan = document.createElement('span');
+      lastSpan.textContent = '23h';
+      labels.appendChild(lastSpan);
+    }
+
+    function renderDailyChart() {
+      const container = document.getElementById('daily-chart-container');
+      container.innerHTML = '';
+
+      const days = Object.keys(RAW_DATA.days).sort();
+      let maxVal = 1;
+      days.forEach(d => {
+        const tot = RAW_DATA.days[d].total;
+        if (tot > maxVal) maxVal = tot;
+      });
+
+      days.forEach(d => {
+        const dInfo = RAW_DATA.days[d];
+        const heightPct = Math.max((dInfo.total / maxVal) * 100, 5);
+
+        const col = document.createElement('div');
+        col.className = 'flex-1 flex flex-col justify-end items-center h-full group relative';
+
+        const bar = document.createElement('div');
+        bar.className = 'w-full rounded-t bg-gradient-to-t from-cyan-600 to-indigo-500 bar-hover transition-all';
+        bar.style.height = heightPct + '%';
+
+        const label = document.createElement('div');
+        label.className = 'text-[10px] text-gray-400 mt-2 font-mono truncate w-full text-center';
+        label.textContent = d.slice(5); // MM-DD
+
+        const tip = document.createElement('div');
+        tip.className = 'absolute bottom-full mb-2 hidden group-hover:flex flex-col bg-gray-900 border border-gray-700 text-[10px] text-gray-200 p-2 rounded-lg shadow-xl z-20 pointer-events-none whitespace-nowrap font-mono';
+        tip.innerHTML = `<strong>Date : ${d}</strong>` +
+          `<span>Total: ${formatNumber(dInfo.total)}</span>` +
+          `<span>Cache Hit: ${dInfo.cache_hit_pct}%</span>` +
+          `<span>Coût: $${dInfo.cost_usd.toFixed(2)}</span>` +
+          `<span>Appels: ${dInfo.calls}</span>`;
+
+        col.appendChild(tip);
+        col.appendChild(bar);
+        col.appendChild(label);
+        container.appendChild(col);
+      });
+    }
+
+    function renderProjectsTable(filter = '') {
+      const tbody = document.getElementById('projects-tbody');
+      tbody.innerHTML = '';
+
+      const projects = Object.values(RAW_DATA.projects).sort((a, b) => b.total - a.total);
+      
+      projects.forEach(p => {
+        if (filter && !p.workspace_name.toLowerCase().includes(filter.toLowerCase()) && !p.workspace_path.toLowerCase().includes(filter.toLowerCase())) {
+          return;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-800/40 transition';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="font-medium text-white">${p.workspace_name}</div>
+            <div class="text-[10px] text-gray-400 truncate max-w-xs">${p.workspace_path || 'Emplacement non spécifié'}</div>
+          </td>
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-16 bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-brand-500 h-1.5 rounded-full" style="width: ${Math.min(p.percent_of_total, 100)}%"></div>
+              </div>
+              <span class="text-[11px] text-gray-300">${p.percent_of_total}%</span>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-right text-gray-300">${p.calls.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right text-gray-400">${formatNumber(p.input)}</td>
+          <td class="py-3 px-4 text-right text-gray-400">${formatNumber(p.output)}</td>
+          <td class="py-3 px-4 text-right text-emerald-400">${formatNumber(p.cached)}</td>
+          <td class="py-3 px-4 text-right font-bold text-white">${formatNumber(p.total)}</td>
+          <td class="py-3 px-4 text-right text-amber-400 font-semibold">$${p.cost_usd.toFixed(2)}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterProjectTable(val) {
+      renderProjectsTable(val);
+    }
+
+    window.onload = initDashboard;
+  </script>
+</body>
+</html>

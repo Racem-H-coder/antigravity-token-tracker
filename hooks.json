@@ -1,0 +1,11 @@
+{
+  "token-tracker": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "python scripts/session_start_hook.py",
+        "timeout": 15
+      }
+    ]
+  }
+}

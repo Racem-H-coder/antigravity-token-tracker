@@ -1,0 +1,12 @@
+{
+  "name": "antigravity-token-tracker",
+  "displayName": "Antigravity Token Tracker",
+  "version": "1.0.0",
+  "description": "Suivi en temps réel de la consommation de tokens Antigravity par jour, heure et projet avec dashboard interactif et bannière de démarrage.",
+  "author": "Racem-H",
+  "suggestedPrompts": [
+    "📊 Afficher ma consommation de tokens",
+    "📈 Statistiques de tokens par heure et projet",
+    "🚀 Ouvrir le Dashboard des Tokens"
+  ]
+}
