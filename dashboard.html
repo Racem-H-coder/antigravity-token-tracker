@@ -59,13 +59,17 @@
       <div>
         <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
           Antigravity Token Tracker
-          <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">v1.0</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">v1.1</span>
         </h1>
-        <p class="text-xs text-gray-400">Consommation en temps réel · Par Heure, Jour & Projet</p>
+        <p class="text-xs text-gray-400">Suivi Quotas 5h, Hebdo & Journalier en Temps Réel</p>
       </div>
     </div>
     
     <div class="flex items-center space-x-3">
+      <button id="config-btn" onclick="openConfigModal()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-brand-600/30 hover:bg-brand-600/50 text-xs font-medium text-brand-200 border border-brand-500/40 transition">
+        <span>⚙️</span>
+        <span>Abonnement & Quotas</span>
+      </button>
       <button id="refresh-btn" onclick="location.reload()" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-gray-200 border border-gray-700 transition">
         <span>🔄</span>
         <span>Rafraîchir</span>
@@ -78,6 +82,79 @@
 
   <!-- Main Content Container -->
   <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    
+    <!-- Quotas & Limites d'Abonnement (5h & Hebdo) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <!-- Quota 5h Glissante (Sprint) -->
+      <div class="bg-gradient-to-br from-darkcard via-darkcard to-brand-950/40 border border-brand-500/30 rounded-2xl p-6 shadow-lg shadow-brand-500/5 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
+              ⏱️
+            </div>
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-gray-200">Reste Instantané (Fenêtre 5 Heures)</h3>
+              <p id="quota-5h-window-label" class="text-xs text-gray-400 font-mono">Fenêtre glissante de sprint</p>
+            </div>
+          </div>
+          <span id="plan-badge-5h" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">Google AI Pro</span>
+        </div>
+        
+        <div class="flex items-baseline space-x-3 mt-1">
+          <span id="quota-5h-rem" class="text-4xl font-black text-white font-mono">--</span>
+          <span class="text-xs font-medium text-gray-400">tokens disponibles</span>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <div class="flex justify-between text-xs text-gray-300">
+            <span>Consommé 5h : <strong id="quota-5h-used" class="font-mono text-white">--</strong> / <span id="quota-5h-max" class="font-mono text-gray-400">--</span></span>
+            <span id="quota-5h-used-pct" class="font-mono font-bold text-brand-300">--% utilisé</span>
+          </div>
+          <div class="w-full h-3 rounded-full bg-gray-800/80 overflow-hidden p-0.5 border border-gray-700/50">
+            <div id="quota-5h-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
+            <span id="quota-5h-rem-pct" class="text-emerald-400 font-semibold">--% restant disponible</span>
+            <span id="quota-5h-calls" class="font-mono text-gray-400">-- appels</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quota Hebdomadaire (Weekly Cap) -->
+      <div class="bg-gradient-to-br from-darkcard via-darkcard to-cyan-950/40 border border-cyan-500/30 rounded-2xl p-6 shadow-lg shadow-cyan-500/5 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xl">
+              🗓️
+            </div>
+            <div>
+              <h3 class="text-sm font-bold uppercase tracking-wider text-gray-200">Reste Hebdomadaire (Weekly Cap)</h3>
+              <p id="quota-week-window-label" class="text-xs text-gray-400">Semaine en cours (Lun → Dim)</p>
+            </div>
+          </div>
+          <span id="plan-badge-week" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Plafond Hebdo</span>
+        </div>
+        
+        <div class="flex items-baseline space-x-3 mt-1">
+          <span id="quota-week-rem" class="text-4xl font-black text-white font-mono">--</span>
+          <span class="text-xs font-medium text-gray-400">tokens disponibles</span>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <div class="flex justify-between text-xs text-gray-300">
+            <span>Consommé Semaine : <strong id="quota-week-used" class="font-mono text-white">--</strong> / <span id="quota-week-max" class="font-mono text-gray-400">--</span></span>
+            <span id="quota-week-used-pct" class="font-mono font-bold text-cyan-300">--% utilisé</span>
+          </div>
+          <div class="w-full h-3 rounded-full bg-gray-800/80 overflow-hidden p-0.5 border border-gray-700/50">
+            <div id="quota-week-bar" class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-gray-400 pt-1">
+            <span id="quota-week-rem-pct" class="text-cyan-400 font-semibold">--% restant disponible</span>
+            <span>Aujourd'hui a pris <strong id="today-pct-of-weekly-badge" class="text-white font-mono">--%</strong> du quota weekly</span>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- KPI Header Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -141,6 +218,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Consommation par Semaine & Répartition Quota Hebdomadaire Section -->
+    <section class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-sm space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🗓️</span>
+            <span>Consommation par Semaine & Répartition du Quota Hebdomadaire</span>
+          </h2>
+          <p class="text-xs text-gray-400 mt-0.5">Pourcentage exact de la limite weekly consommé par chaque semaine et chaque jour</p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-gray-400 bg-gray-800/60 px-3 py-1.5 rounded-lg border border-gray-700/60">
+          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>
+          <span>Plafond Hebdo Actif : <strong id="ref-weekly-quota-label" class="text-white font-mono">--</strong></span>
+        </div>
+      </div>
+
+      <!-- Table des Semaines avec sous-lignes par Jour -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400 uppercase tracking-wider font-semibold">
+              <th class="py-3 px-4">Période (Semaine / Jour)</th>
+              <th class="py-3 px-4 text-right">Tokens Consommés</th>
+              <th class="py-3 px-4 text-right">% Limite Weekly</th>
+              <th class="py-3 px-4">Progression Quota</th>
+              <th class="py-3 px-4 text-right">Appels</th>
+              <th class="py-3 px-4 text-right">Tokens Restants</th>
+              <th class="py-3 px-4 text-right">Coût Est.</th>
+            </tr>
+          </thead>
+          <tbody id="weeks-tbody" class="divide-y divide-gray-800/60 font-mono">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- Interactive Filters & Hourly Breakdown Section -->
     <section class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-sm space-y-6">
@@ -243,22 +357,115 @@
 
   </main>
 
+  <!-- Modal Configuration Quotas & Abonnement -->
+  <div id="config-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-darkcard border border-darkborder rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <span class="text-xl">⚙️</span>
+          <h3 class="font-bold text-base text-white">Mon Abonnement & Quotas</h3>
+        </div>
+        <button onclick="closeConfigModal()" class="text-gray-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1.5">Formule d'Abonnement Antigravity :</label>
+          <select id="plan-select" onchange="onPlanSelectChange()" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-brand-500">
+            <option value="Google AI Pro">Google AI Pro ($19.99/mois · 75M 5h / 500M hebdo)</option>
+            <option value="Google AI Ultra">Google AI Ultra (Capacité x5 · 250M 5h / 1.5B hebdo)</option>
+            <option value="Google AI Starter">Google AI Starter (Gratuit · 15M 5h / 100M hebdo)</option>
+            <option value="Custom">Personnalisé (Saisie manuelle)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1.5">Quota Fenêtre 5 Heures (en Millions de tokens) :</label>
+          <input type="number" id="input-5h-quota" step="1" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-brand-500 font-mono" />
+          <p class="text-[11px] text-gray-400 mt-1">Capacité de sprint glissante rafraîchie toutes les 5 heures.</p>
+        </div>
+
+        <div>
+          <label class="block text-gray-300 font-semibold mb-1.5">Quota Hebdomadaire (en Millions de tokens) :</label>
+          <input type="number" id="input-weekly-quota" step="10" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-2.5 outline-none focus:ring-1 focus:ring-brand-500 font-mono" />
+          <p class="text-[11px] text-gray-400 mt-1">Plafond global par cycle de 7 jours (Lundi → Dimanche).</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-3 pt-3 border-t border-gray-800">
+        <button onclick="closeConfigModal()" class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition">Annuler</button>
+        <button onclick="saveQuotaConfig()" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg shadow-brand-500/20 transition">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="text-center py-6 border-t border-darkborder text-xs text-gray-400">
-    Antigravity Token Tracker · Créé pour Racem-H · Mis à jour en continu
+    Antigravity Token Tracker · Open Source & Communauté · Mis à jour en continu
   </footer>
 
   <script>
-    const RAW_DATA = {"timestamp": "2026-11-09T23:26:55.746933", "today_date": "2026-11-09", "current_hour": "23", "summary": {"total_input": 11315472, "total_output": 1595276, "total_cached": 178557719, "total_tokens": 191468467, "total_calls": 2179, "estimated_cost_usd": 4.6752, "cache_hit_pct": 94.0}, "today": {"input": 4756011, "output": 719818, "cached": 69465898, "calls": 936, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 196988, "output": 9826, "cached": 1023478, "calls": 43}, "09": {"input": 51020, "output": 2868, "cached": 0, "calls": 1}, "10": {"input": 62331, "output": 6200, "cached": 166406, "calls": 4}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 387299, "output": 72320, "cached": 2031919, "calls": 50}, "14": {"input": 84140, "output": 5771, "cached": 311219, "calls": 19}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 316318, "output": 42453, "cached": 3534684, "calls": 89}, "17": {"input": 1573932, "output": 233698, "cached": 28291963, "calls": 342}, "18": {"input": 1096349, "output": 172692, "cached": 17888999, "calls": 182}, "19": {"input": 77586, "output": 88, "cached": 0, "calls": 1}, "20": {"input": 47996, "output": 12937, "cached": 1375253, "calls": 17}, "21": {"input": 417966, "output": 88280, "cached": 7879614, "calls": 73}, "22": {"input": 444086, "output": 72685, "cached": 6962363, "calls": 115}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 74941727, "cost_usd": 1.8751, "cache_hit_pct": 93.6}, "current_hour_stats": {"hour": "23", "total": 0, "calls": 0, "input": 0, "output": 0, "cached": 0}, "matched_project": {"workspace_name": "validation Software", "workspace_path": "c:\\Users\\medra\\Desktop\\validation Software", "input": 1865329, "output": 266322, "cached": 31955590, "calls": 289, "last_activity": "2026-11-09T22:06:52Z", "total": 34087241, "cost_usd": 0.819, "percent_of_total": 17.8, "cache_hit_pct": 94.5}, "days": {"2026-11-09": {"input": 4756011, "output": 719818, "cached": 69465898, "calls": 936, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 196988, "output": 9826, "cached": 1023478, "calls": 43}, "09": {"input": 51020, "output": 2868, "cached": 0, "calls": 1}, "10": {"input": 62331, "output": 6200, "cached": 166406, "calls": 4}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 387299, "output": 72320, "cached": 2031919, "calls": 50}, "14": {"input": 84140, "output": 5771, "cached": 311219, "calls": 19}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 316318, "output": 42453, "cached": 3534684, "calls": 89}, "17": {"input": 1573932, "output": 233698, "cached": 28291963, "calls": 342}, "18": {"input": 1096349, "output": 172692, "cached": 17888999, "calls": 182}, "19": {"input": 77586, "output": 88, "cached": 0, "calls": 1}, "20": {"input": 47996, "output": 12937, "cached": 1375253, "calls": 17}, "21": {"input": 417966, "output": 88280, "cached": 7879614, "calls": 73}, "22": {"input": 444086, "output": 72685, "cached": 6962363, "calls": 115}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 74941727, "cost_usd": 1.8751, "cache_hit_pct": 93.6}, "2026-11-05": {"input": 702112, "output": 113220, "cached": 4018234, "calls": 77, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 195162, "output": 83990, "cached": 1537486, "calls": 33}, "14": {"input": 258494, "output": 10429, "cached": 371139, "calls": 5}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 213766, "output": 13337, "cached": 1222211, "calls": 27}, "17": {"input": 34690, "output": 5464, "cached": 887398, "calls": 12}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 4833566, "cost_usd": 0.162, "cache_hit_pct": 85.1}, "2026-11-03": {"input": 2607449, "output": 264606, "cached": 51588045, "calls": 521, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 360262, "output": 36145, "cached": 4953833, "calls": 95}, "16": {"input": 692380, "output": 82564, "cached": 23470181, "calls": 129}, "17": {"input": 715379, "output": 55021, "cached": 7480154, "calls": 128}, "18": {"input": 618943, "output": 50498, "cached": 13638048, "calls": 119}, "19": {"input": 220485, "output": 40378, "cached": 2045829, "calls": 50}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 54460100, "cost_usd": 1.2422, "cache_hit_pct": 95.2}, "2026-10-20": {"input": 1448874, "output": 276838, "cached": 32002260, "calls": 349, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 598864, "output": 103999, "cached": 12929789, "calls": 163}, "11": {"input": 227154, "output": 56264, "cached": 2358828, "calls": 49}, "12": {"input": 322435, "output": 79225, "cached": 10566605, "calls": 63}, "13": {"input": 300421, "output": 37350, "cached": 6147038, "calls": 74}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 33727972, "cost_usd": 0.7918, "cache_hit_pct": 95.7}, "2026-11-04": {"input": 1054062, "output": 170709, "cached": 17302060, "calls": 176, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 153406, "output": 14432, "cached": 2594160, "calls": 31}, "18": {"input": 900656, "output": 156277, "cached": 14707900, "calls": 145}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 18526831, "cost_usd": 0.4547, "cache_hit_pct": 94.3}, "2026-10-13": {"input": 147148, "output": 17376, "cached": 728675, "calls": 32, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 147148, "output": 17376, "cached": 728675, "calls": 32}, "11": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 893199, "cost_usd": 0.0299, "cache_hit_pct": 83.2}, "2026-10-27": {"input": 599816, "output": 32709, "cached": 3452547, "calls": 88, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 102434, "output": 3665, "cached": 0, "calls": 9}, "09": {"input": 85007, "output": 3084, "cached": 31253, "calls": 7}, "10": {"input": 325726, "output": 25261, "cached": 3053335, "calls": 66}, "11": {"input": 86649, "output": 699, "cached": 367959, "calls": 6}, "12": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "13": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "14": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "15": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}, "total": 4085072, "cost_usd": 0.1195, "cache_hit_pct": 85.2}}, "hours": {"2026-11-09 17h": {"input": 1573932, "output": 233698, "cached": 28291963, "calls": 342}, "2026-11-09 18h": {"input": 1096349, "output": 172692, "cached": 17888999, "calls": 182}, "2026-11-09 13h": {"input": 387299, "output": 72320, "cached": 2031919, "calls": 50}, "2026-11-09 08h": {"input": 196988, "output": 9826, "cached": 1023478, "calls": 43}, "2026-11-09 09h": {"input": 51020, "output": 2868, "cached": 0, "calls": 1}, "2026-11-09 10h": {"input": 62331, "output": 6200, "cached": 166406, "calls": 4}, "2026-11-09 22h": {"input": 444086, "output": 72685, "cached": 6962363, "calls": 115}, "2026-11-09 21h": {"input": 417966, "output": 88280, "cached": 7879614, "calls": 73}, "2026-11-09 16h": {"input": 316318, "output": 42453, "cached": 3534684, "calls": 89}, "2026-11-09 14h": {"input": 84140, "output": 5771, "cached": 311219, "calls": 19}, "2026-11-05 13h": {"input": 195162, "output": 83990, "cached": 1537486, "calls": 33}, "2026-11-05 14h": {"input": 258494, "output": 10429, "cached": 371139, "calls": 5}, "2026-11-03 15h": {"input": 360262, "output": 36145, "cached": 4953833, "calls": 95}, "2026-11-03 16h": {"input": 692380, "output": 82564, "cached": 23470181, "calls": 129}, "2026-11-03 17h": {"input": 715379, "output": 55021, "cached": 7480154, "calls": 128}, "2026-10-20 10h": {"input": 598864, "output": 103999, "cached": 12929789, "calls": 163}, "2026-10-20 11h": {"input": 227154, "output": 56264, "cached": 2358828, "calls": 49}, "2026-11-04 18h": {"input": 900656, "output": 156277, "cached": 14707900, "calls": 145}, "2026-10-13 10h": {"input": 147148, "output": 17376, "cached": 728675, "calls": 32}, "2026-11-03 18h": {"input": 618943, "output": 50498, "cached": 13638048, "calls": 119}, "2026-11-03 19h": {"input": 220485, "output": 40378, "cached": 2045829, "calls": 50}, "2026-11-05 16h": {"input": 213766, "output": 13337, "cached": 1222211, "calls": 27}, "2026-11-05 17h": {"input": 34690, "output": 5464, "cached": 887398, "calls": 12}, "2026-11-09 19h": {"input": 77586, "output": 88, "cached": 0, "calls": 1}, "2026-11-09 20h": {"input": 47996, "output": 12937, "cached": 1375253, "calls": 17}, "2026-10-20 12h": {"input": 322435, "output": 79225, "cached": 10566605, "calls": 63}, "2026-10-20 13h": {"input": 300421, "output": 37350, "cached": 6147038, "calls": 74}, "2026-10-27 08h": {"input": 102434, "output": 3665, "cached": 0, "calls": 9}, "2026-10-27 09h": {"input": 85007, "output": 3084, "cached": 31253, "calls": 7}, "2026-10-27 10h": {"input": 325726, "output": 25261, "cached": 3053335, "calls": 66}, "2026-10-27 11h": {"input": 86649, "output": 699, "cached": 367959, "calls": 6}, "2026-11-04 17h": {"input": 153406, "output": 14432, "cached": 2594160, "calls": 31}}, "projects": {"Global / Non défini": {"workspace_name": "Global / Non défini", "workspace_path": "", "input": 3306370, "output": 420212, "cached": 36604721, "calls": 609, "last_activity": "2026-11-09T22:26:46Z", "total": 40331303, "cost_usd": 1.0604, "percent_of_total": 21.1, "cache_hit_pct": 91.7}, "Projet python": {"workspace_name": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 2855608, "output": 405766, "cached": 44106021, "calls": 635, "last_activity": "2026-11-09T22:22:55Z", "total": 47367395, "cost_usd": 1.1629, "percent_of_total": 24.7, "cache_hit_pct": 93.9}, "validation Software": {"workspace_name": "validation Software", "workspace_path": "c:\\Users\\medra\\Desktop\\validation Software", "input": 1865329, "output": 266322, "cached": 31955590, "calls": 289, "last_activity": "2026-11-09T22:06:52Z", "total": 34087241, "cost_usd": 0.819, "percent_of_total": 17.8, "cache_hit_pct": 94.5}, "new data": {"workspace_name": "new data", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet Data werehouse- ML\\new data", "input": 531401, "output": 117202, "cached": 16244624, "calls": 172, "last_activity": "2026-11-09T17:44:00Z", "total": 16893227, "cost_usd": 0.3796, "percent_of_total": 8.8, "cache_hit_pct": 96.8}, "Database Management System": {"workspace_name": "Database Management System", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Database Management System", "input": 453656, "output": 94419, "cached": 1908625, "calls": 38, "last_activity": "2026-11-05T14:42:33Z", "total": 2456700, "cost_usd": 0.0981, "percent_of_total": 1.3, "cache_hit_pct": 80.8}, "Projet_Bibliotheque_Django": {"workspace_name": "Projet_Bibliotheque_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Projet_Bibliotheque_Django", "input": 1195295, "output": 129796, "cached": 32861050, "calls": 268, "last_activity": "2026-11-03T17:08:21Z", "total": 34186141, "cost_usd": 0.7447, "percent_of_total": 17.9, "cache_hit_pct": 96.5}, "DS": {"workspace_name": "DS", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Estimation Techniques for Engineers\\DS", "input": 900656, "output": 156277, "cached": 14707900, "calls": 145, "last_activity": "2026-11-04T18:43:55Z", "total": 15764833, "cost_usd": 0.3902, "percent_of_total": 8.2, "cache_hit_pct": 94.2}, "Ds_Django": {"workspace_name": "Ds_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Ds_Django", "input": 207157, "output": 5282, "cached": 169188, "calls": 23, "last_activity": "2026-11-03T17:08:48Z", "total": 381627, "cost_usd": 0.0203, "percent_of_total": 0.2, "cache_hit_pct": 45.0}}, "conversations": [{"id": "863031f5-a2c4-45d9-a890-ef0b69565c9b", "title": "Project Code Review Request", "workspace": "Projet_Bibliotheque_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Projet_Bibliotheque_Django", "input": 1195295, "output": 129796, "cached": 32861050, "total": 34186141, "calls": 268, "last_activity": "2026-11-03T17:08:21Z"}, {"id": "50404e05-8a11-4d27-97e9-ea60c50270db", "title": "ESPRIT Software Project Setup", "workspace": "validation Software", "workspace_path": "c:\\Users\\medra\\Desktop\\validation Software", "input": 1865329, "output": 266322, "cached": 31955590, "total": 34087241, "calls": 289, "last_activity": "2026-11-09T22:06:52Z"}, {"id": "f673137c-2c40-4d75-b0eb-1ec6298d54ef", "title": "Light Mode Display Issue", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 847799, "output": 171728, "cached": 18897255, "total": 19916782, "calls": 185, "last_activity": "2026-10-20T13:11:35Z"}, {"id": "d3898842-d2d4-4fa0-b50c-30012e2ca5ee", "title": "Problème Affichage Icône Wi-Fi", "workspace": "Global / Non défini", "workspace_path": "", "input": 912205, "output": 82779, "cached": 16465611, "total": 17460595, "calls": 172, "last_activity": "2026-11-03T18:48:23Z"}, {"id": "56e5600f-c811-4da7-ba9d-73b4b9aca8f8", "title": "New Data Folder Structure Setup", "workspace": "new data", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet Data werehouse- ML\\new data", "input": 531401, "output": 117202, "cached": 16244624, "total": 16893227, "calls": 172, "last_activity": "2026-11-09T17:44:00Z"}, {"id": "9860a6c1-d90d-46b3-90df-371f92c768cb", "title": "Correction And Integration PDF", "workspace": "DS", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Estimation Techniques for Engineers\\DS", "input": 900656, "output": 156277, "cached": 14707900, "total": 15764833, "calls": 145, "last_activity": "2026-11-04T18:43:55Z"}, {"id": "8d93ccf6-d640-4742-b5f8-51715515f092", "title": "Django Admin Customization Workshop", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 544069, "output": 101049, "cached": 12791687, "total": 13436805, "calls": 149, "last_activity": "2026-10-20T11:00:04Z"}, {"id": "ebd8f914-c0e1-4715-a197-82ba21452e45", "title": "Power BI File Assistance", "workspace": "Global / Non défini", "workspace_path": "", "input": 565915, "output": 72614, "cached": 8578903, "total": 9217432, "calls": 121, "last_activity": "2026-11-09T22:26:05Z"}, {"id": "fee0ab11-998e-4829-83e3-8e1863cce03f", "title": "Terminal Error C Qoi Meaning", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 753222, "output": 47141, "cached": 6046707, "total": 6847070, "calls": 119, "last_activity": "2026-11-04T17:34:03Z"}, {"id": "795b6e8d-fe8a-45f3-8be6-fa9696fddfa3", "title": "Checking the Last Commit", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 294620, "output": 39069, "cached": 3521594, "total": 3855283, "calls": 86, "last_activity": "2026-11-09T17:00:18Z"}, {"id": "105e7bc7-3804-4722-9dd1-472584a51de5", "title": "PL/SQL Summary and Database Management", "workspace": "Global / Non défini", "workspace_path": "", "input": 366947, "output": 71973, "cached": 2031919, "total": 2470839, "calls": 48, "last_activity": "2026-11-09T13:59:35Z"}, {"id": "7d2a36be-8d9e-4143-9c01-dcb53c67ea77", "title": "Preparation Pour Le DS", "workspace": "Database Management System", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\3éme cycle\\Semestre 1\\Database Management System", "input": 453656, "output": 94419, "cached": 1908625, "total": 2456700, "calls": 38, "last_activity": "2026-11-05T14:42:33Z"}, {"id": "ca368291-3d5e-40b0-ba5a-a7a1775f5199", "title": "Problème Activation ActiverFaux Hors Ligne", "workspace": "Global / Non défini", "workspace_path": "", "input": 292792, "output": 46749, "cached": 2092196, "total": 2431737, "calls": 58, "last_activity": "2026-11-03T19:16:47Z"}, {"id": "cd9ea790-6461-4e80-b67c-757b69e4e868", "title": "Best Design for Professional Software Project App", "workspace": "Global / Non défini", "workspace_path": "", "input": 248456, "output": 18801, "cached": 2109609, "total": 2376866, "calls": 39, "last_activity": "2026-11-05T17:01:15Z"}, {"id": "3e160948-ca87-4943-85fd-0cd4841f7993", "title": "Django CRUD Operations For ExpeditionApp", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 211744, "output": 25342, "cached": 1806785, "total": 2043871, "calls": 49, "last_activity": "2026-11-09T22:22:55Z"}, {"id": "93110ca4-5e63-4ea9-89b8-75fab79da0fe", "title": "Creating Antigravity Token Tracking Skill", "workspace": "Global / Non défini", "workspace_path": "", "input": 175800, "output": 36783, "cached": 1750083, "total": 1962666, "calls": 44, "last_activity": "2026-11-09T22:26:46Z"}, {"id": "6c29bd3f-0768-4717-8c29-87b3711bd4df", "title": "Update Training Plan Document", "workspace": "Global / Non défini", "workspace_path": "", "input": 227898, "output": 51160, "cached": 1274768, "total": 1553826, "calls": 35, "last_activity": "2026-11-09T18:18:58Z"}, {"id": "1da68be5-af57-4adc-91c1-6deaf27178e8", "title": "Example of Filling Out Form", "workspace": "Global / Non défini", "workspace_path": "", "input": 310339, "output": 18894, "cached": 1189884, "total": 1519117, "calls": 48, "last_activity": "2026-11-09T10:20:59Z"}, {"id": "011a4d95-f803-4227-b082-7bbcb8cab085", "title": "Using Chat History For Tasks", "workspace": "Global / Non défini", "workspace_path": "", "input": 206018, "output": 20459, "cached": 1111748, "total": 1338225, "calls": 44, "last_activity": "2026-11-09T18:11:12Z"}, {"id": "ab420412-c24c-4966-9da1-44b169f1f5e9", "title": "Django ModelAdmin Fields Configuration", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 147148, "output": 17376, "cached": 728675, "total": 893199, "calls": 32, "last_activity": "2026-10-13T10:54:27Z"}, {"id": "a3cb9ac0-21b4-4f3a-a1e7-0a39033aeda6", "title": "Clear Project For Exam", "workspace": "Ds_Django", "workspace_path": "c:\\Users\\medra\\Desktop\\Ds_Django", "input": 207157, "output": 5282, "cached": 169188, "total": 381627, "calls": 23, "last_activity": "2026-11-03T17:08:48Z"}, {"id": "d0c3dbbc-786c-432e-8267-5230da45d8bd", "title": "Django FieldError Unknown Field", "workspace": "Projet python", "workspace_path": "c:\\Users\\medra\\Documents\\ESPRIT\\Projet python", "input": 57006, "output": 4061, "cached": 313318, "total": 374385, "calls": 15, "last_activity": "2026-10-20T10:15:02Z"}]};
+    const RAW_DATA = {"timestamp": "2026-11-10T15:00:00", "today_date": "2026-11-10", "current_hour": "15", "quota_config": {"active_plan": "Google AI Pro", "rolling_5h_token_quota": 75000000, "daily_token_quota": 100000000, "weekly_token_quota": 500000000, "plans": {"Google AI Starter": {"rolling_5h_token_quota": 15000000, "daily_token_quota": 20000000, "weekly_token_quota": 100000000}, "Google AI Pro": {"rolling_5h_token_quota": 75000000, "daily_token_quota": 100000000, "weekly_token_quota": 500000000}, "Google AI Ultra": {"rolling_5h_token_quota": 250000000, "daily_token_quota": 300000000, "weekly_token_quota": 1500000000}}}, "rolling_5h_quota": {"quota": 75000000, "used": 42350000, "remaining": 32650000, "used_pct": 56.5, "remaining_pct": 43.5, "calls": 280, "input": 3200000, "output": 450000, "cached": 38700000, "cost_usd": 1.1, "is_exceeded": false, "exceeded_by": 0, "window_start": "10:00", "window_end": "15:00", "label": "Fenêtre 5h (10:00 → 15:00)"}, "today_quota": {"quota": 100000000, "used": 68420000, "remaining": 31580000, "used_pct": 68.4, "remaining_pct": 31.6, "pct_of_weekly_limit": 13.68, "is_exceeded": false, "exceeded_by": 0}, "week_quota": {"start_date": "2026-11-09", "end_date": "2026-11-15", "label": "Semaine du 09/11 au 15/11/2026", "total": 145820000, "input": 8200000, "output": 1150000, "cached": 136470000, "calls": 1240, "cost_usd": 3.51, "quota": 500000000, "used_pct_of_weekly_limit": 29.2, "remaining": 354180000, "remaining_pct": 70.8, "is_exceeded": false, "exceeded_by": 0, "days": [{"date": "2026-11-09", "total": 77400000, "input": 4500000, "output": 620000, "cached": 72280000, "calls": 680, "cost_usd": 1.88, "cache_hit_pct": 94.1, "pct_of_weekly_limit": 15.48, "pct_of_daily_limit": 77.4}, {"date": "2026-11-10", "total": 68420000, "input": 3700000, "output": 530000, "cached": 64190000, "calls": 560, "cost_usd": 1.63, "cache_hit_pct": 94.5, "pct_of_weekly_limit": 13.68, "pct_of_daily_limit": 68.4}]}, "weeks": {"2026-11-09": {"start_date": "2026-11-09", "end_date": "2026-11-15", "label": "Semaine du 09/11 au 15/11/2026", "total": 145820000, "input": 8200000, "output": 1150000, "cached": 136470000, "calls": 1240, "cost_usd": 3.51, "quota": 500000000, "used_pct_of_weekly_limit": 29.2, "remaining": 354180000, "remaining_pct": 70.8, "is_exceeded": false, "exceeded_by": 0, "days": [{"date": "2026-11-09", "total": 77400000, "input": 4500000, "output": 620000, "cached": 72280000, "calls": 680, "cost_usd": 1.88, "cache_hit_pct": 94.1, "pct_of_weekly_limit": 15.48, "pct_of_daily_limit": 77.4}, {"date": "2026-11-10", "total": 68420000, "input": 3700000, "output": 530000, "cached": 64190000, "calls": 560, "cost_usd": 1.63, "cache_hit_pct": 94.5, "pct_of_weekly_limit": 13.68, "pct_of_daily_limit": 68.4}]}, "2026-11-02": {"start_date": "2026-11-02", "end_date": "2026-11-08", "label": "Semaine du 02/11 au 08/11/2026", "total": 78900000, "input": 4800000, "output": 690000, "cached": 73410000, "calls": 690, "cost_usd": 1.94, "quota": 500000000, "used_pct_of_weekly_limit": 15.8, "remaining": 421100000, "remaining_pct": 84.2, "is_exceeded": false, "exceeded_by": 0, "days": [{"date": "2026-11-03", "total": 52100000, "input": 3100000, "output": 440000, "cached": 48560000, "calls": 450, "cost_usd": 1.28, "cache_hit_pct": 94.0, "pct_of_weekly_limit": 10.42, "pct_of_daily_limit": 52.1}, {"date": "2026-11-04", "total": 21800000, "input": 1400000, "output": 210000, "cached": 20190000, "calls": 190, "cost_usd": 0.54, "cache_hit_pct": 93.5, "pct_of_weekly_limit": 4.36, "pct_of_daily_limit": 21.8}, {"date": "2026-11-05", "total": 5000000, "input": 300000, "output": 40000, "cached": 4660000, "calls": 50, "cost_usd": 0.12, "cache_hit_pct": 93.9, "pct_of_weekly_limit": 1.0, "pct_of_daily_limit": 5.0}]}}, "summary": {"total_input": 13000000, "total_output": 1840000, "total_cached": 209880000, "total_tokens": 224720000, "total_calls": 1930, "estimated_cost_usd": 5.45, "cache_hit_pct": 94.2}, "today": {"input": 3700000, "output": 530000, "cached": 64190000, "total": 68420000, "calls": 560, "cost_usd": 1.63, "cache_hit_pct": 94.5, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "10": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "11": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "12": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "13": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "14": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "15": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}}, "current_hour_stats": {"hour": "15", "total": 2772000, "calls": 25, "input": 150000, "output": 22000, "cached": 2600000}, "matched_project": {"workspace_name": "antigravity-token-tracker", "workspace_path": "c:\\Users\\developer\\projects\\antigravity-token-tracker", "input": 1200000, "output": 180000, "cached": 15600000, "calls": 140, "last_activity": "2026-11-10T14:45:00Z", "total": 16980000, "cost_usd": 0.43, "percent_of_total": 7.5, "cache_hit_pct": 92.8}, "days": {"2026-11-09": {"input": 4500000, "output": 620000, "cached": 72280000, "total": 77400000, "calls": 680, "cost_usd": 1.88, "cache_hit_pct": 94.1, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "10": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "11": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "12": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "13": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "14": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "15": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "16": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "17": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "18": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "19": {"input": 200000, "output": 30000, "cached": 3500000, "calls": 30}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}}, "2026-11-10": {"input": 3700000, "output": 530000, "cached": 64190000, "total": 68420000, "calls": 560, "cost_usd": 1.63, "cache_hit_pct": 94.5, "hours": {"00": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "01": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "02": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "03": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "04": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "05": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "06": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "07": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "08": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "09": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "10": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "11": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "12": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "13": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "14": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "15": {"input": 150000, "output": 22000, "cached": 2600000, "calls": 25}, "16": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "17": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "18": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "19": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "20": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "21": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "22": {"input": 0, "output": 0, "cached": 0, "calls": 0}, "23": {"input": 0, "output": 0, "cached": 0, "calls": 0}}}}, "hours": {}, "projects": {"web-app-frontend": {"workspace_name": "web-app-frontend", "workspace_path": "/projects/web-app-frontend", "input": 4500000, "output": 680000, "cached": 75000000, "calls": 690, "total": 80180000, "cost_usd": 1.95, "percent_of_total": 35.7, "cache_hit_pct": 94.3, "last_activity": "2026-11-10T14:30:00Z"}, "api-backend-python": {"workspace_name": "api-backend-python", "workspace_path": "/projects/api-backend-python", "input": 3800000, "output": 540000, "cached": 62000000, "calls": 560, "total": 66340000, "cost_usd": 1.61, "percent_of_total": 29.5, "cache_hit_pct": 94.2, "last_activity": "2026-11-10T13:20:00Z"}, "antigravity-token-tracker": {"workspace_name": "antigravity-token-tracker", "workspace_path": "/projects/antigravity-token-tracker", "input": 2100000, "output": 310000, "cached": 35000000, "calls": 320, "total": 37410000, "cost_usd": 0.91, "percent_of_total": 16.6, "cache_hit_pct": 94.3, "last_activity": "2026-11-10T14:50:00Z"}, "documentation-portal": {"workspace_name": "documentation-portal", "workspace_path": "/projects/documentation-portal", "input": 1500000, "output": 210000, "cached": 24000000, "calls": 210, "total": 25710000, "cost_usd": 0.63, "percent_of_total": 11.4, "cache_hit_pct": 94.1, "last_activity": "2026-11-09T18:00:00Z"}}, "conversations": []};
 
     function formatNumber(n) {
+      if (n >= 1000000000) return (n / 1000000000).toFixed(2) + 'B';
       if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
       if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
-      return n.toLocaleString();
+      return (n || 0).toLocaleString();
     }
 
     function initDashboard() {
       // Update Sync Time
       document.getElementById('sync-time').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      // Populate Quotas (5h Rolling & Weekly Cap)
+      const qConfig = RAW_DATA.quota_config || {};
+      const r5 = RAW_DATA.rolling_5h_quota || {};
+      const wQuota = RAW_DATA.week_quota || {};
+      const tQuota = RAW_DATA.today_quota || {};
+      const planName = qConfig.active_plan || 'Google AI Pro';
+
+      // 5-Hour Rolling Card
+      document.getElementById('plan-badge-5h').textContent = planName;
+      document.getElementById('quota-5h-window-label').textContent = r5.label || 'Fenêtre 5h glissante';
+      document.getElementById('quota-5h-rem').textContent = formatNumber(r5.remaining || 0);
+      document.getElementById('quota-5h-used').textContent = formatNumber(r5.used || 0);
+      document.getElementById('quota-5h-max').textContent = formatNumber(r5.quota || 75000000);
+      document.getElementById('quota-5h-used-pct').textContent = (r5.used_pct || 0) + '% utilisé';
+      document.getElementById('quota-5h-rem-pct').textContent = (r5.remaining_pct || 0) + '% restant disponible';
+      document.getElementById('quota-5h-calls').textContent = (r5.calls || 0) + ' appels (5h)';
+
+      const bar5h = document.getElementById('quota-5h-bar');
+      const pct5h = Math.min(r5.used_pct || 0, 100);
+      bar5h.style.width = pct5h + '%';
+      if (pct5h > 90) {
+        bar5h.className = 'h-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500 transition-all duration-500';
+      } else if (pct5h > 70) {
+        bar5h.className = 'h-full rounded-full bg-gradient-to-r from-emerald-500 to-amber-400 transition-all duration-500';
+      } else {
+        bar5h.className = 'h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500';
+      }
+
+      // Weekly Quota Card
+      document.getElementById('plan-badge-week').textContent = 'Plafond ' + formatNumber(wQuota.quota || 500000000);
+      document.getElementById('quota-week-window-label').textContent = wQuota.label || 'Semaine en cours (Lun → Dim)';
+      document.getElementById('quota-week-rem').textContent = formatNumber(wQuota.remaining || 0);
+      document.getElementById('quota-week-used').textContent = formatNumber(wQuota.total || 0);
+      document.getElementById('quota-week-max').textContent = formatNumber(wQuota.quota || 500000000);
+      document.getElementById('quota-week-used-pct').textContent = (wQuota.used_pct_of_weekly_limit || 0) + '% de toute la limite weekly';
+      document.getElementById('quota-week-rem-pct').textContent = (wQuota.remaining_pct || 0) + '% restant disponible';
+      document.getElementById('today-pct-of-weekly-badge').textContent = (tQuota.pct_of_weekly_limit || 0) + '%';
+      document.getElementById('ref-weekly-quota-label').textContent = formatNumber(wQuota.quota || 500000000) + ' tokens';
+
+      const barWeek = document.getElementById('quota-week-bar');
+      const pctWeek = Math.min(wQuota.used_pct_of_weekly_limit || 0, 100);
+      barWeek.style.width = pctWeek + '%';
+      if (pctWeek > 90) {
+        barWeek.className = 'h-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500 transition-all duration-500';
+      } else if (pctWeek > 70) {
+        barWeek.className = 'h-full rounded-full bg-gradient-to-r from-cyan-500 to-amber-400 transition-all duration-500';
+      } else {
+        barWeek.className = 'h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500';
+      }
 
       // Populate KPIs
       const sum = RAW_DATA.summary;
@@ -276,6 +483,9 @@
 
       document.getElementById('kpi-cost').textContent = '$' + sum.estimated_cost_usd.toFixed(2);
       document.getElementById('kpi-today-cost').textContent = '$' + today.cost_usd.toFixed(2);
+
+      // Render Tables and Charts
+      renderWeeksTable();
 
       // Populate Day Selector
       const daySelect = document.getElementById('day-select');
@@ -295,6 +505,168 @@
 
       renderDailyChart();
       renderProjectsTable();
+    }
+
+    function renderWeeksTable() {
+      const tbody = document.getElementById('weeks-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const weeksObj = RAW_DATA.weeks || {};
+      const weekKeys = Object.keys(weeksObj).sort().reverse();
+
+      weekKeys.forEach(wKey => {
+        const w = weeksObj[wKey];
+        const isCurrentWeek = (wKey === (RAW_DATA.week_quota && RAW_DATA.week_quota.start_date));
+        
+        // Main week row
+        const trWeek = document.createElement('tr');
+        trWeek.className = 'bg-gray-800/50 hover:bg-gray-800/70 border-b border-gray-700/60 font-semibold text-white';
+        
+        const badgeColor = w.used_pct_of_weekly_limit > 80 ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' :
+          (w.used_pct_of_weekly_limit > 50 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30');
+
+        trWeek.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="flex items-center space-x-2">
+              <span class="text-sm">🗓️</span>
+              <div>
+                <span class="font-bold">${w.label}</span>
+                ${isCurrentWeek ? '<span class="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">Semaine Actuelle</span>' : ''}
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-right font-black text-white text-sm">${formatNumber(w.total)}</td>
+          <td class="py-3 px-4 text-right">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeColor}">
+              ${w.used_pct_of_weekly_limit}%
+            </span>
+          </td>
+          <td class="py-3 px-4 w-40">
+            <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-700/50">
+              <div class="bg-gradient-to-r from-cyan-500 to-indigo-500 h-2 rounded-full" style="width: ${Math.min(w.used_pct_of_weekly_limit, 100)}%"></div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-right text-gray-300">${w.calls.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right font-bold text-emerald-400">${formatNumber(w.remaining)}</td>
+          <td class="py-3 px-4 text-right text-amber-400 font-bold">$${w.cost_usd.toFixed(2)}</td>
+        `;
+        tbody.appendChild(trWeek);
+
+        // Daily sub-rows
+        if (w.days && w.days.length > 0) {
+          w.days.forEach(d => {
+            const isToday = (d.date === RAW_DATA.today_date);
+            const trDay = document.createElement('tr');
+            trDay.className = isToday ? 'bg-brand-950/20 hover:bg-brand-950/30 text-gray-200' : 'hover:bg-gray-800/30 text-gray-300';
+            
+            trDay.innerHTML = `
+              <td class="py-2.5 px-4 pl-10 text-gray-400 flex items-center space-x-2">
+                <span class="text-xs text-gray-500">↳</span>
+                <span class="${isToday ? 'text-brand-300 font-bold' : ''}">Jour : ${d.date}</span>
+                ${isToday ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Aujourd\'hui</span>' : ''}
+              </td>
+              <td class="py-2.5 px-4 text-right font-mono ${isToday ? 'text-white font-bold' : 'text-gray-200'}">${formatNumber(d.total)}</td>
+              <td class="py-2.5 px-4 text-right font-mono text-cyan-300 font-semibold">${d.pct_of_weekly_limit}% du weekly</td>
+              <td class="py-2.5 px-4 w-40">
+                <div class="w-full bg-gray-900/60 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-cyan-500/70 h-1.5 rounded-full" style="width: ${Math.min(d.pct_of_weekly_limit * 3, 100)}%"></div>
+                </div>
+              </td>
+              <td class="py-2.5 px-4 text-right text-gray-400 font-mono">${d.calls.toLocaleString()}</td>
+              <td class="py-2.5 px-4 text-right text-gray-400 font-mono text-[11px]">${d.cache_hit_pct}% cache</td>
+              <td class="py-2.5 px-4 text-right text-amber-300/90 font-mono">$${d.cost_usd.toFixed(2)}</td>
+            `;
+            tbody.appendChild(trDay);
+          });
+        }
+      });
+    }
+
+    function openConfigModal() {
+      const qConfig = RAW_DATA.quota_config || {};
+      const currentPlan = qConfig.active_plan || 'Google AI Pro';
+      document.getElementById('plan-select').value = currentPlan;
+      document.getElementById('input-5h-quota').value = (qConfig.rolling_5h_token_quota || 75000000) / 1000000;
+      document.getElementById('input-weekly-quota').value = (qConfig.weekly_token_quota || 500000000) / 1000000;
+      document.getElementById('config-modal').classList.remove('hidden');
+    }
+
+    function closeConfigModal() {
+      document.getElementById('config-modal').classList.add('hidden');
+    }
+
+    function onPlanSelectChange() {
+      const sel = document.getElementById('plan-select').value;
+      const plans = (RAW_DATA.quota_config && RAW_DATA.quota_config.plans) || {
+        'Google AI Starter': { rolling_5h_token_quota: 15000000, weekly_token_quota: 100000000 },
+        'Google AI Pro': { rolling_5h_token_quota: 75000000, weekly_token_quota: 500000000 },
+        'Google AI Ultra': { rolling_5h_token_quota: 250000000, weekly_token_quota: 1500000000 }
+      };
+      if (plans[sel]) {
+        document.getElementById('input-5h-quota').value = plans[sel].rolling_5h_token_quota / 1000000;
+        document.getElementById('input-weekly-quota').value = plans[sel].weekly_token_quota / 1000000;
+      }
+    }
+
+    async function saveQuotaConfig() {
+      const plan = document.getElementById('plan-select').value;
+      const q5hM = parseFloat(document.getElementById('input-5h-quota').value) || 75;
+      const weeklyM = parseFloat(document.getElementById('input-weekly-quota').value) || 500;
+      const payload = {
+        active_plan: plan,
+        rolling_5h_token_quota: Math.round(q5hM * 1000000),
+        weekly_token_quota: Math.round(weeklyM * 1000000)
+      };
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          location.reload();
+          return;
+        }
+      } catch (e) {}
+
+      // Fallback for file mode: update in memory and recalculate
+      if (!RAW_DATA.quota_config) RAW_DATA.quota_config = {};
+      RAW_DATA.quota_config.active_plan = payload.active_plan;
+      RAW_DATA.quota_config.rolling_5h_token_quota = payload.rolling_5h_token_quota;
+      RAW_DATA.quota_config.weekly_token_quota = payload.weekly_token_quota;
+      
+      if (RAW_DATA.rolling_5h_quota) {
+        RAW_DATA.rolling_5h_quota.quota = payload.rolling_5h_token_quota;
+        RAW_DATA.rolling_5h_quota.remaining = Math.max(0, payload.rolling_5h_token_quota - RAW_DATA.rolling_5h_quota.used);
+        RAW_DATA.rolling_5h_quota.used_pct = Math.round((RAW_DATA.rolling_5h_quota.used / payload.rolling_5h_token_quota) * 1000) / 10;
+        RAW_DATA.rolling_5h_quota.remaining_pct = Math.max(0, Math.round((100 - RAW_DATA.rolling_5h_quota.used_pct) * 10) / 10);
+      }
+
+      if (RAW_DATA.week_quota) {
+        RAW_DATA.week_quota.quota = payload.weekly_token_quota;
+        RAW_DATA.week_quota.remaining = Math.max(0, payload.weekly_token_quota - RAW_DATA.week_quota.total);
+        RAW_DATA.week_quota.used_pct_of_weekly_limit = Math.round((RAW_DATA.week_quota.total / payload.weekly_token_quota) * 1000) / 10;
+        RAW_DATA.week_quota.remaining_pct = Math.max(0, Math.round((100 - RAW_DATA.week_quota.used_pct_of_weekly_limit) * 10) / 10);
+      }
+
+      if (RAW_DATA.weeks) {
+        Object.values(RAW_DATA.weeks).forEach(w => {
+          w.quota = payload.weekly_token_quota;
+          w.used_pct_of_weekly_limit = Math.round((w.total / payload.weekly_token_quota) * 1000) / 10;
+          w.remaining = Math.max(0, payload.weekly_token_quota - w.total);
+          w.remaining_pct = Math.max(0, Math.round((100 - w.used_pct_of_weekly_limit) * 10) / 10);
+          if (w.days) {
+            w.days.forEach(d => {
+              d.pct_of_weekly_limit = Math.round((d.total / payload.weekly_token_quota) * 10000) / 100;
+            });
+          }
+        });
+      }
+
+      closeConfigModal();
+      initDashboard();
     }
 
     function renderHourlyChart(dayKey) {

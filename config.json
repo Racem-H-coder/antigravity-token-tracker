@@ -1,0 +1,32 @@
+{
+  "active_plan": "Google AI Pro",
+  "rolling_5h_token_quota": 75000000,
+  "daily_token_quota": 100000000,
+  "weekly_token_quota": 500000000,
+  "plans": {
+    "Google AI Starter": {
+      "rolling_5h_token_quota": 15000000,
+      "daily_token_quota": 20000000,
+      "weekly_token_quota": 100000000,
+      "description": "Formule Gratuite / Starter (Limite hebdomadaire 100M)"
+    },
+    "Google AI Pro": {
+      "rolling_5h_token_quota": 75000000,
+      "daily_token_quota": 100000000,
+      "weekly_token_quota": 500000000,
+      "description": "Abonnement Google AI Pro ($19.99/mois, Fenêtre 5h: 75M, Hebdo: 500M)"
+    },
+    "Google AI Ultra": {
+      "rolling_5h_token_quota": 250000000,
+      "daily_token_quota": 300000000,
+      "weekly_token_quota": 1500000000,
+      "description": "Abonnement Google AI Ultra (Fenêtre 5h: 250M, Hebdo: 1.5B)"
+    },
+    "Custom": {
+      "rolling_5h_token_quota": 75000000,
+      "daily_token_quota": 100000000,
+      "weekly_token_quota": 500000000,
+      "description": "Limites personnalisées configurables"
+    }
+  }
+}

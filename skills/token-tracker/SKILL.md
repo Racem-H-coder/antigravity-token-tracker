@@ -1,19 +1,23 @@
 ---
 name: token-tracker
 description: >-
-  Suivi et analyse en temps réel de la consommation de tokens Antigravity (par jour, heure et projet).
+  Suivi et analyse en temps réel de la consommation de tokens et des quotas Antigravity (limite 5h glissante, plafond weekly, jour et projets).
   Permet d'afficher un rapport détaillé, de générer un dashboard HTML interactif ou d'inspecter les coûts.
 ---
 
 # Antigravity Token Tracker Skill
 
-Cette skill permet à Antigravity d'analyser, suivre et afficher en temps réel la consommation exacte de tokens (Input, Output, Cache, Coûts) répartie par jour, par heure et par projet.
+Cette skill permet à Antigravity d'analyser, suivre et afficher en temps réel la consommation exacte de tokens (Input, Output, Cache, Coûts) ainsi que les quotas d'abonnement :
+- **Limite instantanée 5h glissante** (Sprint capacity Google AI Pro / Ultra)
+- **Plafond hebdomadaire (Weekly Cap)** et pourcentage utilisé par semaine et par jour
+- **Consommation par projet et par heure**
 
 ---
 
 ## 🎯 Quand utiliser cette skill ?
 
-- L'utilisateur tape `/tokens` ou demande « combien de tokens ai-je consommés ? ».
+- L'utilisateur tape `/tokens` ou demande « combien de tokens me reste-t-il ? ».
+- L'utilisateur s'informe sur sa limite 5h ou son quota hebdomadaire / journalier.
 - L'utilisateur veut connaître sa consommation aujourd'hui, cette semaine ou par heure.
 - L'utilisateur souhaite comparer la consommation de tokens entre différents projets / dossiers de travail.
 - L'utilisateur demande d'ouvrir ou rafraîchir le dashboard interactif.

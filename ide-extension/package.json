@@ -1,0 +1,38 @@
+{
+  "name": "antigravity-token-tracker-status",
+  "displayName": "Antigravity Token Tracker Status",
+  "description": "Bouton dans la barre d'état pour ouvrir le dashboard de tokens et voir les détails du site",
+  "version": "1.0.0",
+  "publisher": "google-antigravity",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "antigravityTokenTracker.showMenu",
+        "title": "⚡ Menu des Tokens & Détails du Site",
+        "category": "Tokens"
+      },
+      {
+        "command": "antigravityTokenTracker.openDashboard",
+        "title": "🌐 Ouvrir le Dashboard des Tokens (Navigateur)",
+        "category": "Tokens"
+      },
+      {
+        "command": "antigravityTokenTracker.openWebview",
+        "title": "📊 Ouvrir le Dashboard des Tokens (Onglet IDE)",
+        "category": "Tokens"
+      }
+    ]
+  },
+  "__metadata": {
+    "installedTimestamp": 1792156942777,
+    "targetPlatform": "universal"
+  }
+}

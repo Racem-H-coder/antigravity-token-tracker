@@ -1,134 +1,188 @@
 # ⚡ Antigravity Token Tracker
 
-Un plugin et une skill pour **Google Antigravity** permettant de suivre, analyser et visualiser votre consommation de tokens d'IA en temps réel : **par jour**, **par heure**, et **par projet (workspace)**.
+Un outil complet (Plugin, Skill, Extension IDE et Dashboard Web) pour **Google Antigravity** permettant de suivre, analyser et maîtriser votre consommation de tokens d'IA en temps réel : **fenêtre glissante 5h**, **limite hebdomadaire (Weekly)**, **consommation quotidienne & par heure**, et **détail par projet**.
+
+[![Antigravity Compatible](https://img.shields.io/badge/Antigravity-2.0%20%7C%20Plugin%20%26%20Skill-blue.svg)](https://github.com/Racem-H/antigravity-token-tracker)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform: Windows / Linux / macOS](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](README.md)
 
 ---
 
-## 🌟 Fonctionnalités
+## 🌟 Fonctionnalités Principales
 
-1. **🖥️ Affichage automatique au démarrage (`SessionStart` Hook)** :
-   - Dès que vous ouvrez une **nouvelle fenêtre** ou démarrez une nouvelle conversation dans Antigravity, un bandeau visuel synthétique s'affiche **au milieu du chat** avec votre consommation du jour, l'heure actuelle, le projet actif et un bouton pour ouvrir le dashboard.
+### 1. ⏱️ Suivi des Limites Instantanées (Fenêtre Roulante 5h & Quota Hebdomadaire)
+- **Sprint 5 Heures Glissantes** : Mesure exacte de votre consommation sur les 5 dernières heures glissantes (`now - 5h`) pour éviter d'atteindre la limite de débit instantanée.
+- **Quota Hebdomadaire (Weekly Cap)** : Suivi précis du volume restant sur la semaine en cours (du lundi au dimanche) et jauge de progression visuelle.
+- **Plans Préconfigurés & Personnalisés** :
+  - **Google AI Starter** : 15M (5h) / 100M (Semaine)
+  - **Google AI Pro** : 75M (5h) / 500M (Semaine)
+  - **Google AI Ultra** : 250M (5h) / 1.5 Milliard (Semaine)
+  - **Custom** : Limites entièrement personnalisables via CLI ou depuis l'interface web.
 
-2. **🔘 Bouton d'accès en 1 clic pendant le travail sur un projet ou un fichier** :
-   - **Bouton d'action dans le chat** : Cliquez sur les suggestions de prompts intégrées ou sur le lien `[📊 Ouvrir le Dashboard Graphique]`.
-   - **Raccourci exécutable sur le Bureau** : Double-cliquez sur `📊 Antigravity Tokens.bat` sur votre bureau ou sur `open_dashboard.bat` dans ce dossier pour ouvrir instantanément le tableau de bord dans votre navigateur.
-   - **Tâche IDE (VS Code / Antigravity IDE)** : Lancez la tâche `📊 Antigravity: Voir les Tokens` via `Ctrl+Shift+B`.
-   - **Commande `/tokens`** : Tapez simplement `/tokens` dans Antigravity pour réactualiser les métriques.
+### 2. 📅 Décomposition par Semaine & Pourcentage Quotidien du Quota
+- **Tableau Hebdomadaire Détaillé** : Affiche chaque semaine avec son total de tokens, son pourcentage d'utilisation de la limite de la semaine (`% de la limite weekly`), et les tokens restants.
+- **Sous-lignes Quotidiennes** : Visualisez l'impact exact de chaque journée sur le quota hebdomadaire global.
 
-3. **📈 Dashboard Graphique Interactif (`dashboard.html`)** :
-   - **Cartes KPI** : Total Tokens, Input (Prompt), Output (Génération), Cache Read Tokens, Coût estimé en USD, Total des appels.
-   - **Graphique par Heure (00h - 23h)** : Histogramme interactif montrant l'activité heure par heure pour chaque journée, avec détection de l'heure de pointe.
-   - **Graphique par Jour** : Évolution de la consommation au fil des jours.
-   - **Tableau par Projet** : Analyse détaillée par dossier/workspace (pourcentage de consommation globale, appels, répartition input/output/cache, coût).
-   - **Filtres interactifs** : Sélecteur de date, recherche textuelle de projets, rafraîchissement en direct.
+### 3. 📊 Dashboard Graphique Interactif (`dashboard.html`)
+- **Cartes KPI Héro** : Tokens restants sur 5h, Tokens restants sur la semaine, Total global, Coût estimé en USD, Économies de Cache.
+- **Graphique par Heure (00h - 23h)** : Histogramme interactif montrant l'activité heure par heure pour chaque journée, avec détection de l'heure de pointe.
+- **Graphique par Jour** : Évolution de la consommation au fil des jours.
+- **Tableau par Projet / Workspace** : Analyse détaillée par dossier/projet (volume, pourcentage d'utilisation, input, output, cache read).
+- **Modale de Configuration Intégrée** : Changez de forfait (Starter / Pro / Ultra) ou modifiez vos quotas directement dans l'interface avec sauvegarde instantanée.
+
+### 4. 🖥️ Intégration Native Antigravity IDE (Status Bar)
+- **Indicateur permanent** dans la barre d'état : `⚡ 5h: XXM · Hebdo: YYM restants`.
+- **Survol (Hover)** : Affiche la synthèse complète (fenêtre 5h, hebdo, jour, cache, coût).
+- **Menu 1-Clic & Raccourci `Ctrl+Alt+T`** : Ouvre le dashboard, rafraîchit les métriques ou change de forfait sans quitter l'éditeur.
+
+### 5. 💬 Bannière Markdown Automatique & Commande `/tokens`
+- **Hook `SessionStart`** : Affiche automatiquement une synthèse au lancement d'une nouvelle conversation.
+- **Commande `/tokens`** : Invoquez à tout moment la skill pour inspecter vos quotas en cours de session.
 
 ---
 
-## 🏗️ Architecture du Projet
+## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
     subgraph Antigravity ["Environnement Antigravity"]
-        A["Nouvelle Fenêtre / Session"] -->|Événement SessionStart| B["hooks.json"]
+        A["Nouvelle Fenêtre / Session"] -->|Hook SessionStart| B["hooks.json"]
         B --> C["scripts/session_start_hook.py"]
         C --> D["scripts/tracker.py"]
         
-        U["Utilisateur tape /tokens ou clique un bouton"] -->|Activation Skill| S["skills/token-tracker/SKILL.md"]
+        U["Chat: /tokens ou prompt"] -->|Skill Antigravity| S["skills/token-tracker/SKILL.md"]
         S --> D
+
+        IDE["Antigravity IDE Status Bar"] -->|Extension locale| E["ide-extension/extension.js"]
+        E -->|API / CLI| D
     end
 
-    subgraph DataSources ["Sources de Données Antigravity"]
-        DB[("conversation_summaries.db\n(Projets & Métadonnées)")]
+    subgraph DataSources ["Sources Locales Antigravity"]
+        DB[("conversation_summaries.db\n(Projets & Workspaces)")]
         Logs[("transcript.jsonl\n(Tokens input, output, cache)")]
+        Cfg[("config.json\n(Quotas & Plans)")]
     end
 
-    D -->|Lecture SQLite mode ro| DB
-    D -->|Analyse JSONL| Logs
+    D -->|Lecture SQLite mode=ro| DB
+    D -->|Analyse JSONL horodatée| Logs
+    D -->|Lecture / Écriture| Cfg
 
-    D -->|Injection Markdown| ChatUI["Bannière au milieu du Chat"]
     D -->|Génération| Dash["dashboard.html (Dashboard Interactif)"]
-    Dash --> Browser["Navigateur Web / WebView"]
+    D -->|HTTP Server / API| Live["Serveur Live (Port 8765)"]
 ```
 
 ---
 
-## 📂 Structure des Fichiers
+## 📂 Structure du Répertoire
 
 ```text
-C:\Users\medra\Desktop\antigravity-token-tracker/
+antigravity-token-tracker/
+├── install.bat                 # ⚡ Installateur universel Windows en 1 clic
+├── install.ps1                 # Script d'installation PowerShell
+├── open_dashboard.bat          # Lanceur rapide du dashboard dans le navigateur
+├── open_dashboard.ps1          # Lanceur PowerShell du dashboard
+├── config.json                 # Configuration des quotas et plans (Starter/Pro/Ultra)
 ├── plugin.json                 # Manifest officiel du plugin Antigravity
-├── hooks.json                  # Hook de démarrage de session (SessionStart)
-├── dashboard.html              # Tableau de bord HTML/Tailwind interactif
-├── open_dashboard.bat          # Lanceur Windows 1-clic (ouvre le dashboard)
-├── open_dashboard.ps1          # Lanceur PowerShell
+├── hooks.json                  # Hook de démarrage SessionStart
+├── dashboard.html              # Tableau de bord interactif HTML5 / Tailwind
 ├── README.md                   # Documentation complète
-├── PROJECT_HISTORY.md          # Journal de bord et décisions techniques
-├── .gitignore                  # Fichiers exclus de Git
-├── .vscode/
-│   └── tasks.json              # Raccourci tâche IDE (Ctrl+Shift+B)
+├── PROJECT_HISTORY.md          # Historique technique et décisions d'architecture
 ├── scripts/
-│   ├── tracker.py              # Moteur principal d'analyse des tokens & serveur HTTP
-│   └── session_start_hook.py   # Script exécuté par le hook de démarrage
+│   ├── tracker.py              # Moteur principal, calcul des quotas 5h/hebdo, serveur HTTP
+│   └── session_start_hook.py   # Handler du hook SessionStart
+├── ide-extension/
+│   ├── package.json            # Manifest extension Antigravity IDE
+│   └── extension.js            # Affichage barre d'état et commandes QuickPick
 ├── skills/
 │   └── token-tracker/
 │       └── SKILL.md            # Définition de la skill Antigravity
 └── rules/
-    └── AGENTS.md               # Instructions globales pour l'agent
+    └── AGENTS.md               # Règles globales de suivi pour l'agent
 ```
 
 ---
 
-## 🚀 Installation & Activation
+## 🚀 Installation Rapide (1 Clic)
 
-### 1. Liaison automatique avec Antigravity
-Le dossier du plugin sur le Bureau est lié directement dans la configuration globale d'Antigravity :
-```powershell
-New-Item -ItemType Junction -Path "$HOME\.gemini\config\plugins\antigravity-token-tracker" -Target "C:\Users\medra\Desktop\antigravity-token-tracker"
+### Méthode 1 : Installateur Automatique (Recommandé)
+1. Clonez ce dépôt :
+   ```bash
+   git clone https://github.com/Racem-H/antigravity-token-tracker.git
+   cd antigravity-token-tracker
+   ```
+2. Double-cliquez sur **`install.bat`** (ou lancez `.\install.ps1` dans PowerShell).
+   - Lie automatiquement le plugin dans `~/.gemini/config/plugins/`
+   - Active la skill globale dans `~/.gemini/config/skills/`
+   - Active l'extension pour Antigravity IDE dans `~/.antigravity-ide/extensions/`
+   - Génère votre premier tableau de bord personnalisé.
+
+---
+
+## ⚙️ Configuration des Quotas & Forfaits
+
+Vous pouvez ajuster vos quotas à tout moment via la ligne de commande ou depuis le dashboard web :
+
+### Sélection d'un Forfait Préconfiguré
+```bash
+# Sélectionner Google AI Pro (75M 5h / 500M Semaine)
+python scripts/tracker.py --set-plan "Google AI Pro"
+
+# Sélectionner Google AI Ultra (250M 5h / 1.5B Semaine)
+python scripts/tracker.py --set-plan "Google AI Ultra"
+
+# Sélectionner Google AI Starter (15M 5h / 100M Semaine)
+python scripts/tracker.py --set-plan "Google AI Starter"
 ```
 
-Antigravity détecte immédiatement le plugin sans avoir besoin de redémarrer.
+### Définir des Quotas Personnalisés
+```bash
+# Modifier la limite 5h (supporte M pour Millions, B pour Milliards)
+python scripts/tracker.py --set-5h-quota 80M
 
-### 2. Utilisation en Ligne de Commande (CLI)
-- **Résumé rapide dans le terminal** :
-  ```powershell
+# Modifier la limite hebdomadaire
+python scripts/tracker.py --set-weekly-quota 600M
+
+# Modifier la limite quotidienne indicative
+python scripts/tracker.py --set-daily-quota 120M
+```
+
+---
+
+## 💻 Utilisation CLI
+
+- **Afficher le résumé instantané dans le terminal** :
+  ```bash
   python scripts/tracker.py --summary
   ```
-- **Générer / Mettre à jour le dashboard HTML** :
-  ```powershell
+- **Afficher la bannière Markdown (format Chat Antigravity)** :
+  ```bash
+  python scripts/tracker.py --markdown
+  ```
+- **Régénérer le dashboard HTML avec les données locales** :
+  ```bash
   python scripts/tracker.py --html
   ```
-- **Lancer le serveur live local (auto-refresh)** :
-  ```powershell
+- **Démarrer le serveur dynamique (avec API de config et rechargement en direct)** :
+  ```bash
   python scripts/tracker.py --serve --port 8765
   ```
-
----
-
-## 📤 Pousser ce projet sur votre Dépôt Git (GitHub / GitLab)
-
-Le dépôt Git local est initialisé directement dans ce dossier sur le Bureau.
-
-Pour le publier sur votre compte GitHub :
-
-1. **Créez un nouveau dépôt vide sur GitHub** (par exemple nommé `antigravity-token-tracker`).
-2. **Liez votre dépôt distant et poussez vos fichiers** :
-   ```bash
-   cd "C:\Users\medra\Desktop\antigravity-token-tracker"
-   git remote add origin https://github.com/Racem-H/antigravity-token-tracker.git
-   git branch -M main
-   git push -u origin main
-   ```
+- **Générer un dashboard démo anonymisé (pour capture ou commit public)** :
+  ```bash
+  python scripts/tracker.py --demo
+  ```
 
 ---
 
 ## 💰 Modèle de Calcul des Coûts
-Les coûts estimés sont calculés selon la grille standard **Gemini 1.5/2.0 Flash** :
-- **Input (Prompt)** : \$0.075 pour 1 million de tokens
-- **Output (Génération)** : \$0.30 pour 1 million de tokens
-- **Context Caching (Cache)** : \$0.01875 pour 1 million de tokens (75% d'économie)
+Les coûts indicatifs sont calculés sur la base des tarifs standard **Gemini 2.0 Flash / Pro** :
+- **Prompt (Input)** : $0.075 / 1 Million de tokens
+- **Génération (Output)** : $0.30 / 1 Million de tokens
+- **Context Caching (Lecture de Cache)** : $0.01875 / 1 Million de tokens (~75% d'économie)
 
 ---
 
-## 👤 Auteur
-- **Développeur** : Racem-H
-- **Email** : med.racem@gmail.com
+## 🤝 Contribution & Licence
+
+Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une Issue ou une Pull Request pour proposer de nouvelles fonctionnalités ou des améliorations visuelles.
+
+Ce projet est sous licence **MIT**.
