@@ -2,7 +2,7 @@
 
 Un outil complet (Plugin, Skill, Extension IDE et Dashboard Web) pour **Google Antigravity** permettant de suivre, analyser et maîtriser votre consommation de tokens d'IA en temps réel : **fenêtre glissante 5h**, **limite hebdomadaire (Weekly)**, **consommation quotidienne & par heure**, et **détail par projet**.
 
-[![Antigravity Compatible](https://img.shields.io/badge/Antigravity-2.0%20%7C%20Plugin%20%26%20Skill-blue.svg)](https://github.com/Racem-H/antigravity-token-tracker)
+[![Antigravity Compatible](https://img.shields.io/badge/Antigravity-2.0%20%7C%20Plugin%20%26%20Skill-blue.svg)](https://github.com/Racem-H-coder/antigravity-token-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform: Windows / Linux / macOS](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](README.md)
 
@@ -107,7 +107,7 @@ antigravity-token-tracker/
 ### Méthode 1 : Installateur Automatique (Recommandé)
 1. Clonez ce dépôt :
    ```bash
-   git clone https://github.com/Racem-H/antigravity-token-tracker.git
+   git clone https://github.com/Racem-H-coder/antigravity-token-tracker.git
    cd antigravity-token-tracker
    ```
 2. Double-cliquez sur **`install.bat`** (ou lancez `.\install.ps1` dans PowerShell).

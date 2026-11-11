@@ -24,7 +24,7 @@ Permettre le suivi automatique et détaillé de la consommation de tokens dans A
 3. **Skill Antigravity (`skills/token-tracker/SKILL.md`)** :
    - Prise en charge des requêtes chat et de la commande `/tokens`.
 4. **Dépôt Git** :
-   - Initialisé sur la branche `main` dans le dossier du Bureau, prêt à être poussé sur GitHub (`Racem-H`).
+   - Initialisé sur la branche `main` dans le dossier du Bureau, prêt à être poussé sur GitHub (`Racem-H-coder`).
 
 ---
 
